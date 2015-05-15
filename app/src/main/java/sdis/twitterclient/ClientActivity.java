@@ -1,6 +1,8 @@
 package sdis.twitterclient;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -8,6 +10,7 @@ import android.support.v4.app.FragmentManager;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -17,6 +20,15 @@ import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.List;
+
+import twitter4j.Status;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.auth.AccessToken;
+import twitter4j.auth.RequestToken;
 
 
 public class ClientActivity extends ActionBarActivity
@@ -32,6 +44,11 @@ public class ClientActivity extends ActionBarActivity
      */
     private CharSequence mTitle;
 
+
+    private Twitter twitter;
+    private AccessToken accessToken;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,6 +62,15 @@ public class ClientActivity extends ActionBarActivity
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
+
+
+
+        this.twitter = LoginActivity.twitter;
+        this.accessToken = LoginActivity.accessToken;
+        Log.d("twitter ", LoginActivity.twitter.toString());
+
+        new TwitterApiRequest(TwitterApiRequest.home_timeline, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, accessToken.getToken(), accessToken.getTokenSecret()).execute();
+
     }
 
     @Override

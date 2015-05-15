@@ -25,8 +25,8 @@ import twitter4j.conf.ConfigurationBuilder;
 
 public class LoginActivity extends ActionBarActivity {
 
-    static String TWITTER_CONSUMER_KEY = "38SSotcpNaprOstWA6jctfmG5"; // place your cosumer key here
-    static String TWITTER_CONSUMER_SECRET = "ytFGceSKDQnc2HE61EYLRuotLeym09WKXzg0h3FE4OnOWahvyk"; // place your consumer secret here
+    public static String TWITTER_CONSUMER_KEY = "38SSotcpNaprOstWA6jctfmG5"; // place your consumer key here
+    public static String TWITTER_CONSUMER_SECRET = "ytFGceSKDQnc2HE61EYLRuotLeym09WKXzg0h3FE4OnOWahvyk"; // place your consumer secret here
 
     // Preference Constants
     static String PREFERENCE_NAME = "twitter_oauth";
@@ -42,12 +42,17 @@ public class LoginActivity extends ActionBarActivity {
     static final String URL_TWITTER_OAUTH_TOKEN = "oauth_token";
 
     // Twitter
-    private static Twitter twitter;
-    private static RequestToken requestToken;
-    private AccessToken accessToken;
+    public static Twitter twitter;
+    public static RequestToken requestToken;
+    public static AccessToken accessToken;
+    public static Configuration configuration;
 
     // Shared Preferences
     private static SharedPreferences mSharedPreferences;
+
+    public static String TWITTER_OBJECT = "TWITTER_OBJECT";
+    public static String ACCESS_TOKEN_OBJECT = "ACCESS_TOKEN_OBJECT";
+    public static String REQUEST_TOKEN_OBJECT = "REQUEST_TOKEN_OBJECT";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +87,7 @@ public class LoginActivity extends ActionBarActivity {
             ConfigurationBuilder builder = new ConfigurationBuilder();
             builder.setOAuthConsumerKey(TWITTER_CONSUMER_KEY);
             builder.setOAuthConsumerSecret(TWITTER_CONSUMER_SECRET);
-            Configuration configuration = builder.build();
+            configuration = builder.build();
 
             TwitterFactory factory = new TwitterFactory(configuration);
             twitter = factory.getInstance();
@@ -178,9 +183,6 @@ public class LoginActivity extends ActionBarActivity {
 
                     LoginActivity.this.runOnUiThread(new ToastRunnable(username, getApplicationContext()));
 
-                    Toast.makeText(getApplicationContext(), "Welcome " + username,
-                            Toast.LENGTH_LONG).show();
-
                     ConfigurationBuilder builder = new ConfigurationBuilder();
                     builder.setOAuthConsumerKey(TWITTER_CONSUMER_KEY);
                     builder.setOAuthConsumerSecret(TWITTER_CONSUMER_SECRET);
@@ -192,9 +194,10 @@ public class LoginActivity extends ActionBarActivity {
                     String access_token_secret = mSharedPreferences.getString(
                             PREF_KEY_OAUTH_SECRET, "");
 
-                    AccessToken accessToken = new AccessToken(access_token,
+
+                    accessToken = new AccessToken(access_token,
                             access_token_secret);
-                    Twitter twitter = new TwitterFactory(builder.build())
+                    twitter = new TwitterFactory(builder.build())
                             .getInstance(accessToken);
 
 
@@ -203,7 +206,6 @@ public class LoginActivity extends ActionBarActivity {
                 }
             }
 
-
         @Override
         protected void onPostExecute(Boolean result) {
             // TODO Auto-generated method stub
@@ -211,6 +213,8 @@ public class LoginActivity extends ActionBarActivity {
                     Toast.LENGTH_SHORT).show();
 
             Intent intent = new Intent(LoginActivity.this, ClientActivity.class);
+            intent.putExtra(TWITTER_OBJECT, twitter);
+            intent.putExtra(ACCESS_TOKEN_OBJECT, accessToken);
             startActivity(intent);
 
         }
