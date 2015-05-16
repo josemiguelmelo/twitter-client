@@ -44,9 +44,10 @@ public class ClientActivity extends ActionBarActivity
      */
     private CharSequence mTitle;
 
-
     private Twitter twitter;
     private AccessToken accessToken;
+
+    private User user;
 
 
     @Override
@@ -69,8 +70,10 @@ public class ClientActivity extends ActionBarActivity
         this.accessToken = LoginActivity.accessToken;
         Log.d("twitter ", LoginActivity.twitter.toString());
 
-        new TwitterApiRequest(TwitterApiRequest.home_timeline, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, accessToken.getToken(), accessToken.getTokenSecret()).execute();
+        this.user = new User(this.accessToken.getUserId(), this.accessToken);
 
+        this.user.postTweet("Tweet sent by Twitter Client.");
+        this.user.postReTweet("599597896170864640");
     }
 
     @Override
