@@ -1,4 +1,4 @@
-package sdis.twitterclient;
+package sdis.twitterclient.GUI;
 
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import sdis.twitterclient.R;
 import twitter4j.Twitter;
 import twitter4j.TwitterFactory;
 import twitter4j.User;

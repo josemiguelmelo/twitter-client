@@ -1,4 +1,4 @@
-package sdis.twitterclient;
+package sdis.twitterclient.GUI;
 
 import android.content.Context;
 import android.widget.Toast;

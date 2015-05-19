@@ -1,5 +1,7 @@
-package sdis.twitterclient;
+package sdis.twitterclient.Models;
 
+
+import sdis.twitterclient.Models.User;
 
 public class Tweet {
 

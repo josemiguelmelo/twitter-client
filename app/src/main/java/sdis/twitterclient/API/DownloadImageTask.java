@@ -1,4 +1,4 @@
-package sdis.twitterclient;
+package sdis.twitterclient.API;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

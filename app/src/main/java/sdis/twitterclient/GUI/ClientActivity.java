@@ -1,35 +1,23 @@
-package sdis.twitterclient;
+package sdis.twitterclient.GUI;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.content.Context;
-import android.os.Build;
+import android.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import java.util.List;
-
-import twitter4j.Status;
+import sdis.twitterclient.Models.User;
+import sdis.twitterclient.R;
 import twitter4j.Twitter;
-import twitter4j.TwitterException;
 import twitter4j.auth.AccessToken;
-import twitter4j.auth.RequestToken;
 
 
 public class ClientActivity extends ActionBarActivity
@@ -54,10 +42,14 @@ public class ClientActivity extends ActionBarActivity
     private User user;
 
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_client);
+
+
 
         tweetsListView = (ListView) findViewById(R.id.TweetsList);
         mNavigationDrawerFragment = (NavigationDrawerFragment)
@@ -86,9 +78,9 @@ public class ClientActivity extends ActionBarActivity
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
-        FragmentManager fragmentManager = getSupportFragmentManager();
+        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
+                .replace(R.id.container, new TimelineFragment())
                 .commit();
     }
 

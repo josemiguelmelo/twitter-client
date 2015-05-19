@@ -1,4 +1,4 @@
-package sdis.twitterclient;
+package sdis.twitterclient.Models;
 
 
 import android.graphics.Bitmap;
@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import sdis.twitterclient.API.DownloadImageTask;
+import sdis.twitterclient.API.TwitterApiRequest;
+import sdis.twitterclient.GUI.LoginActivity;
 import twitter4j.auth.AccessToken;
 
 public class User {
