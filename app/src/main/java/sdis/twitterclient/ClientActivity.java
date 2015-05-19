@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +34,9 @@ import twitter4j.auth.RequestToken;
 
 public class ClientActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+
+    private ListView tweetsListView;
+
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -55,6 +59,7 @@ public class ClientActivity extends ActionBarActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_client);
 
+        tweetsListView = (ListView) findViewById(R.id.TweetsList);
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
@@ -71,9 +76,15 @@ public class ClientActivity extends ActionBarActivity
         Log.d("twitter ", LoginActivity.twitter.toString());
 
         this.user = new User(this.accessToken.getUserId(), this.accessToken);
+        this.user.loadFriends();
+        this.user.loadTweets();
+        this.user.loadFollowers();
+        this.user.loadTimeline();
 
-        this.user.postTweet("Tweet sent by Twitter Client.");
-        this.user.postReTweet("599597896170864640");
+        Log.d("timeline", Integer.toString(user.getHomeTimeLineTweets().size()));
+        tweetsListView.setAdapter(new ListAdapter(user.getHomeTimeLineTweets() , this));
+
+
     }
 
     @Override

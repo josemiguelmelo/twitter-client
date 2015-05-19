@@ -9,13 +9,11 @@
     <FrameLayout android:id="@+id/container" android:layout_width="match_parent"
         android:layout_height="match_parent" >
 
-        <TextView
+        <ListView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Large Text"
-            android:id="@+id/textView"
-            android:layout_gravity="center_horizontal|top" />
+            android:layout_height="fill_parent"
+            android:id="@+id/TweetsList"
+            android:layout_gravity="center" />
     </FrameLayout>
 
     <!-- android:layout_gravity="start" tells DrawerLayout to treat
