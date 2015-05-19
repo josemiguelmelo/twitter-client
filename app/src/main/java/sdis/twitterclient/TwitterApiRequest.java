@@ -260,7 +260,7 @@ public class TwitterApiRequest extends AsyncTask{
 
         JSONObject userObject = tweetsJsonObject.getJSONObject("user");
         User user = new User(userObject.getLong("id"), userObject.getString("name"), userObject.getString("screen_name"));
-
+        user.setProfileImage(userObject.getString("profile_image_url"));
         return user;
     }
 

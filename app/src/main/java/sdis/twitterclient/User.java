@@ -1,6 +1,7 @@
 package sdis.twitterclient;
 
 
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import org.apache.http.NameValuePair;
@@ -18,11 +19,10 @@ public class User {
     private String name;
     private String screen_name;
     private long id;
-
     private AccessToken accessToken;
 
-
     private String email;
+    private String profileImage;
 
     private ArrayList<User> friendsList;
     private ArrayList<Tweet> tweetsPublished;
@@ -47,6 +47,14 @@ public class User {
         this.friendsList = new ArrayList<User>();
         this.tweetsPublished = new ArrayList<Tweet>();
         this.homeTimeLineTweets = new ArrayList<Tweet>();
+    }
+
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(String profileImage) {
+        this.profileImage = profileImage;
     }
 
 
@@ -114,18 +122,6 @@ public class User {
         this.accessToken = accessToken;
     }
 
-    public void loadTweets(){
-        TwitterApiRequest apiRequest = new TwitterApiRequest(TwitterApiRequest.GET_USER_TWEETS, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, accessToken.getToken(), accessToken.getTokenSecret());
-
-        try {
-            this.tweetsPublished = (ArrayList<Tweet>) apiRequest.execute().get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void postReTweet(String tweet_id){
         TwitterApiRequest apiRequest = new TwitterApiRequest(TwitterApiRequest.POST_RETWEET, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, accessToken.getToken(), accessToken.getTokenSecret());
 
@@ -165,6 +161,19 @@ public class User {
             e.printStackTrace();
         }
     }
+
+    public void loadTweets(){
+        TwitterApiRequest apiRequest = new TwitterApiRequest(TwitterApiRequest.GET_USER_TWEETS, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, accessToken.getToken(), accessToken.getTokenSecret());
+
+        try {
+            this.tweetsPublished = (ArrayList<Tweet>) apiRequest.execute().get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void loadFollowers(){
         TwitterApiRequest apiRequest = new TwitterApiRequest(TwitterApiRequest.GET_FRIENDS_LIST, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, accessToken.getToken(), accessToken.getTokenSecret());
 
@@ -193,7 +202,7 @@ public class User {
         TwitterApiRequest apiRequest = new TwitterApiRequest(TwitterApiRequest.GET_TIMELINE_TWEETS, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, accessToken.getToken(), accessToken.getTokenSecret());
 
         try {
-            this.tweetsPublished = (ArrayList<Tweet>) apiRequest.execute().get();
+            this.homeTimeLineTweets = (ArrayList<Tweet>) apiRequest.execute().get();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
