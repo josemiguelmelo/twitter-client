@@ -10,6 +10,9 @@ public class Tweet {
     private User publisher;
     private User userMentions;
 
+
+    private String publisherUsername;
+
     public Tweet(String text){
         this.text = text;
         this.created_at = null;
@@ -18,12 +21,22 @@ public class Tweet {
         this.userMentions = null;
     }
 
-    public Tweet(User publisher, long id, String created_at, String text){
+    public Tweet(String publisherUsername, long id, String created_at, String text){
         this.created_at = created_at;
         this.id = id;
         this.text = text;
         this.publisher = publisher;
         this.userMentions = null;
+        this.publisherUsername = publisherUsername;
+    }
+
+
+    public String getPublisherUsername() {
+        return publisherUsername;
+    }
+
+    public void setPublisherUsername(String publisherUsername) {
+        this.publisherUsername = publisherUsername;
     }
 
     public User getPublisher() {

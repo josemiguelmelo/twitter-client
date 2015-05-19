@@ -256,12 +256,10 @@ public class TwitterApiRequest extends AsyncTask{
     }
 
     /** get user object from JSON **/
-    private User getUserFromTweetsJSON(JSONObject tweetsJsonObject) throws JSONException {
-
+    private String getUserFromTweetsJSON(JSONObject tweetsJsonObject) throws JSONException {
         JSONObject userObject = tweetsJsonObject.getJSONObject("user");
-        User user = new User(userObject.getLong("id"), userObject.getString("name"), userObject.getString("screen_name"));
-        user.setProfileImage(userObject.getString("profile_image_url"));
-        return user;
+        return userObject.getString("screen_name");
+
     }
 
     /** get users that are following the user **/
@@ -294,6 +292,7 @@ public class TwitterApiRequest extends AsyncTask{
                     JSONObject userObject = friendsListArray.getJSONObject(i);
 
                     User user = new User(userObject.getLong("id"), userObject.getString("name"), userObject.getString("screen_name"));
+                    user.setProfileImage(userObject.getString("profile_image_url"));
 
                     followersList.add(user);
                 }
@@ -344,6 +343,8 @@ public class TwitterApiRequest extends AsyncTask{
                     JSONObject userObject = friendsListArray.getJSONObject(i);
 
                     User user = new User(userObject.getLong("id"), userObject.getString("name"), userObject.getString("screen_name"));
+                    user.setProfileImage(userObject.getString("profile_image_url"));
+                    Log.d("Asd", "profile image");
 
                     friendsList.add(user);
                 }
@@ -381,9 +382,9 @@ public class TwitterApiRequest extends AsyncTask{
             for (int i = 0; i < tweetsArray.length(); i++) {
                 JSONObject tweetsObject = tweetsArray.getJSONObject(i);
 
-                User user = getUserFromTweetsJSON(tweetsObject);
+                String username = getUserFromTweetsJSON(tweetsObject);
 
-                Tweet tweet = new Tweet(user, tweetsObject.getLong("id"), tweetsObject.getString("created_at"), tweetsObject.getString("text"));
+                Tweet tweet = new Tweet(username, tweetsObject.getLong("id"), tweetsObject.getString("created_at"), tweetsObject.getString("text"));
                 tweets.add(tweet);
             }
         } catch (JSONException e) {
@@ -418,9 +419,9 @@ public class TwitterApiRequest extends AsyncTask{
             for(int i = 0; i < tweetsArray.length(); i++){
                 JSONObject tweetsObject = tweetsArray.getJSONObject(i);
 
-                User user = getUserFromTweetsJSON(tweetsObject);
+                String userScreenName = getUserFromTweetsJSON(tweetsObject);
 
-                Tweet tweet = new Tweet(user, tweetsObject.getLong("id"), tweetsObject.getString("created_at"), tweetsObject.getString("text"));
+                Tweet tweet = new Tweet(userScreenName, tweetsObject.getLong("id"), tweetsObject.getString("created_at"), tweetsObject.getString("text"));
                 tweets.add(tweet);
             }
 

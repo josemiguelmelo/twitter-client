@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 public class ListAdapter extends BaseAdapter {
 
@@ -60,7 +61,7 @@ public class ListAdapter extends BaseAdapter {
 
         Tweet tweet = tweetArrayList.get(position);
 
-        new DownloadImageTask(tweet.getPublisher().getProfileImage(), image).execute();
+        image.setImageBitmap(tweet.getPublisher().getProfileBitmapImage());
         fromView.setText(tweet.getPublisher().getName());
         descView.setText(tweet.getText());
         timeView.setText(tweet.getCreated_at());

@@ -12,12 +12,11 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
-public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-    String url;
-    ImageView image;
-    public DownloadImageTask(String url,  ImageView image) {
+public class DownloadImageTask extends AsyncTask {
+    private String url;
+
+    public DownloadImageTask(String url) {
         this.url = url;
-        this.image = image;
     }
 
     private Bitmap getImageBitmap(String url) {
@@ -37,11 +36,9 @@ public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
         return bm;
     }
 
-    protected Bitmap doInBackground(String... urls) {
-        return getImageBitmap(url);
-    }
+    @Override
+    protected Object doInBackground(Object[] params) {
 
-    protected void onPostExecute(Bitmap result) {
-        image.setImageBitmap(result);
+        return getImageBitmap(this.url);
     }
 }
