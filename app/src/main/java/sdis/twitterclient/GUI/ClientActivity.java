@@ -65,11 +65,9 @@ public class ClientActivity extends ActionBarActivity
 
         this.twitter = LoginActivity.twitter;
         this.accessToken = LoginActivity.accessToken;
-        Log.d("twitter ", LoginActivity.twitter.toString());
 
-        this.user = new User(this.accessToken.getUserId(), this.accessToken);
+        this.user = new User(this.getApplicationContext(), this.accessToken.getUserId(), this.accessToken);
         this.user.init();
-        this.user.loadTimeline();
 
         tweetsListView.setAdapter(new ListAdapter(user.getHomeTimeLineTweets() , this));
 

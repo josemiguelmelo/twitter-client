@@ -177,6 +177,7 @@ public class TwitterApiRequest extends AsyncTask{
             }else if(this.request.equals(GET_FRIENDS_LIST)){
                 return getFriendsList();
             }else if(this.request.equals(GET_FOLLOWERS_LIST)){
+
                 return getFollowersList();
             }else if(this.request.equals(POST_NEW_TWEET)){
                 if(postParams == null){
@@ -191,6 +192,7 @@ public class TwitterApiRequest extends AsyncTask{
                 }
                 return postRetweet();
             }
+
 
         return null;
     }
@@ -279,7 +281,7 @@ public class TwitterApiRequest extends AsyncTask{
                 for (int i = 0; i < friendsListArray.length(); i++) {
                     JSONObject userObject = friendsListArray.getJSONObject(i);
 
-                    User user = new User(userObject.getLong("id"), userObject.getString("name"), userObject.getString("screen_name"));
+                    User user = new User(null, userObject.getLong("id"), userObject.getString("name"), userObject.getString("screen_name"));
                     user.setProfileImage(userObject.getString("profile_image_url"));
 
                     followersList.add(user);
@@ -330,9 +332,8 @@ public class TwitterApiRequest extends AsyncTask{
                 for (int i = 0; i < friendsListArray.length(); i++) {
                     JSONObject userObject = friendsListArray.getJSONObject(i);
 
-                    User user = new User(userObject.getLong("id"), userObject.getString("name"), userObject.getString("screen_name"));
+                    User user = new User(null, userObject.getLong("id"), userObject.getString("name"), userObject.getString("screen_name"));
                     user.setProfileImage(userObject.getString("profile_image_url"));
-                    Log.d("Asd", "profile image");
 
                     friendsList.add(user);
                 }
