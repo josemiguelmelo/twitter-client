@@ -65,9 +65,6 @@ public class User {
         this.databaseHandler = new DatabaseHandler(context);
     }
 
-    /**
-     * Loads friends, followers and tweets
-     */
     public void init(){
         this.loadFriends();
         this.loadFollowers();
@@ -92,7 +89,6 @@ public class User {
         }
     }
 
-
     public ArrayList<User> getFollowersList() {
         return followersList;
     }
@@ -104,8 +100,6 @@ public class User {
     public void appendFollowersList(ArrayList<User> followersList) {
         this.followersList.addAll(followersList);
     }
-
-
 
     public String getProfileImage() {
         return profileImage;
@@ -221,7 +215,6 @@ public class User {
         }
     }
 
-
     public void postTweet(String tweetMessage)
     {
         TwitterApiRequest apiRequest = new TwitterApiRequest(TwitterApiRequest.POST_NEW_TWEET, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, accessToken.getToken(), accessToken.getTokenSecret());
@@ -241,9 +234,6 @@ public class User {
             e.printStackTrace();
         }
     }
-
-
-
 
     public void loadFollowers(){
         TwitterApiRequest apiRequest = new TwitterApiRequest(TwitterApiRequest.GET_FOLLOWERS_LIST, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, getAccessToken().getToken(), getAccessToken().getTokenSecret());

@@ -14,6 +14,10 @@ import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.ListView;
 
+import java.util.ArrayList;
+
+import sdis.twitterclient.Database.DatabaseHandler;
+import sdis.twitterclient.Models.Category;
 import sdis.twitterclient.Models.User;
 import sdis.twitterclient.R;
 import twitter4j.Twitter;
@@ -24,6 +28,7 @@ public class ClientActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
     private ListView tweetsListView;
+    public DatabaseHandler databaseHandler;
 
 
     /**
@@ -70,6 +75,16 @@ public class ClientActivity extends ActionBarActivity
         this.user.init();
 
         tweetsListView.setAdapter(new ListAdapter(user.getHomeTimeLineTweets() , this));
+
+        this.databaseHandler = new DatabaseHandler(this.getApplicationContext());
+        Category category = new Category("Category 1");
+        category.setUsers(user.getFriendsList());
+        this.databaseHandler.addCategory(category);
+
+        ArrayList<Category> categories = this.databaseHandler.getAllCategories();
+        Log.d("Number categories", "" + categories.size());
+        Log.d("First category name", "" + categories.get(0).getName());
+        Log.d("First category users", "" + categories.get(0).getUsers().size());
 
     }
 
