@@ -33,6 +33,7 @@ public class LoginActivity extends ActionBarActivity {
     static String PREFERENCE_NAME = "twitter_oauth";
     static final String PREF_KEY_OAUTH_TOKEN = "oauth_token";
     static final String PREF_KEY_OAUTH_SECRET = "oauth_token_secret";
+    static final String TWITTER_USER_ID = "twitter_user_id";
     static final String PREF_KEY_TWITTER_LOGIN = "isTwitterLoggedIn";
 
     static final String TWITTER_CALLBACK_URL = "oauth://t4jsample";
@@ -47,6 +48,9 @@ public class LoginActivity extends ActionBarActivity {
     public static RequestToken requestToken;
     public static AccessToken accessToken;
     public static Configuration configuration;
+    public static String accessTokenString;
+    public static String accessTokenSecretString;
+    public static long twitterUserId;
 
     // Shared Preferences
     private static SharedPreferences mSharedPreferences;
@@ -62,6 +66,16 @@ public class LoginActivity extends ActionBarActivity {
 
         mSharedPreferences = this.getSharedPreferences(
                 "sdis.twitterclient", Context.MODE_PRIVATE);
+
+        if(mSharedPreferences.getBoolean(PREF_KEY_TWITTER_LOGIN, false))
+        {
+            accessTokenString = mSharedPreferences.getString(PREF_KEY_OAUTH_TOKEN, "");
+            accessTokenSecretString = mSharedPreferences.getString(PREF_KEY_OAUTH_SECRET, "");
+            twitterUserId = mSharedPreferences.getLong(TWITTER_USER_ID, 0);
+            accessToken = new AccessToken(accessTokenString, accessTokenSecretString, twitterUserId);
+            Intent intent = new Intent(LoginActivity.this, ClientActivity.class);
+            startActivity(intent);
+        }
 
         Button signInButton = (Button) findViewById(R.id.signInButton);
         signInButton.setOnClickListener(new View.OnClickListener() {
@@ -172,6 +186,7 @@ public class LoginActivity extends ActionBarActivity {
                     // store them in application preferences
                     e.putString(PREF_KEY_OAUTH_TOKEN, accessToken.getToken());
                     e.putString(PREF_KEY_OAUTH_SECRET, accessToken.getTokenSecret());
+                    e.putLong(TWITTER_USER_ID, accessToken.getUserId());
                     // Store login status - true
                     e.putBoolean(PREF_KEY_TWITTER_LOGIN, true);
                     e.commit(); // save changes

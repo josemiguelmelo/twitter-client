@@ -1,6 +1,9 @@
 package sdis.twitterclient.GUI;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.app.Fragment;
@@ -12,7 +15,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -46,15 +51,13 @@ public class ClientActivity extends ActionBarActivity
 
     private User user;
 
-
+    private static SharedPreferences mSharedPreferences;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_client);
-
-
 
         tweetsListView = (ListView) findViewById(R.id.TweetsList);
         mNavigationDrawerFragment = (NavigationDrawerFragment)
@@ -67,11 +70,19 @@ public class ClientActivity extends ActionBarActivity
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
 
+        mSharedPreferences = this.getSharedPreferences(
+                "sdis.twitterclient", Context.MODE_PRIVATE);
+
+
 
         this.twitter = LoginActivity.twitter;
         this.accessToken = LoginActivity.accessToken;
 
         this.user = new User(this.getApplicationContext(), this.accessToken.getUserId(), this.accessToken);
+
+        Log.d("Access token secret", this.accessToken.getTokenSecret());
+        Log.d("Access token", this.accessToken.getToken());
+        Log.d("Access User ID", "" + this.accessToken.getUserId());
         this.user.init();
 
         tweetsListView.setAdapter(new ListAdapter(user.getHomeTimeLineTweets() , this));
@@ -110,6 +121,20 @@ public class ClientActivity extends ActionBarActivity
                 break;
         }
     }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle presses on the action bar items
+        switch (item.getItemId()) {
+            case R.id.action_logout:
+                SharedPreferences.Editor e = mSharedPreferences.edit();
+                e.putBoolean(LoginActivity.PREF_KEY_TWITTER_LOGIN, false);
+                e.commit();
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 
     public void restoreActionBar() {
         ActionBar actionBar = getSupportActionBar();
@@ -132,20 +157,6 @@ public class ClientActivity extends ActionBarActivity
         return super.onCreateOptionsMenu(menu);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
 
     /**
      * A placeholder fragment containing a simple view.

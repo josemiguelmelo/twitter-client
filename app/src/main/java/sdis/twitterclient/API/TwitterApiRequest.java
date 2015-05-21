@@ -175,7 +175,10 @@ public class TwitterApiRequest extends AsyncTask{
             }else if(this.request.equals(GET_TIMELINE_TWEETS)){
                 return getHomeTimelineTweets();
             }else if(this.request.equals(GET_FRIENDS_LIST)){
-                return getFriendsList();
+                ArrayList<User> friends = getFriendsList();
+                if(friends.size() == 0)
+                    return null;
+                return friends;
             }else if(this.request.equals(GET_FOLLOWERS_LIST)){
 
                 return getFollowersList();
@@ -186,6 +189,7 @@ public class TwitterApiRequest extends AsyncTask{
                 }
                 return postNewTweet();
             }else if(this.request.equals(POST_RETWEET)){
+                Log.d("Post ret", "ete");
                 if(postParams == null){
                     Log.e("POST PARAMETERS", "Post parameters required not found.");
                     return null;
@@ -210,6 +214,7 @@ public class TwitterApiRequest extends AsyncTask{
     public String postRetweet(){
         long tweet_id = this.getIdFromParams(this.postParams);
 
+        Log.d("tweet_id", ""+tweet_id);
         String postResponse = null;
 
         try {

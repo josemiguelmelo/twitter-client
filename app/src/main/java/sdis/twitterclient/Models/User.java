@@ -3,6 +3,7 @@ package sdis.twitterclient.Models;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Handler;
 import android.util.Log;
 
 import org.apache.http.NameValuePair;
@@ -252,6 +253,9 @@ public class User {
 
         try {
             this.friendsList = (ArrayList<User>) apiRequest.execute().get();
+            if(this.friendsList == null){
+                return ;
+            }
             Log.d("friends list", ""+friendsList.size());
             for(User user: this.getFriendsList()){
                 user.setProfileBitmapImage();

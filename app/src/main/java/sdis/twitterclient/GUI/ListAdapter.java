@@ -1,15 +1,22 @@
 package sdis.twitterclient.GUI;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import sdis.twitterclient.API.TwitterApiRequest;
 import sdis.twitterclient.Models.Tweet;
 import sdis.twitterclient.R;
 
@@ -51,13 +58,25 @@ public class ListAdapter extends BaseAdapter {
         TextView fromView = (TextView)v.findViewById(R.id.From);
         TextView descView = (TextView)v.findViewById(R.id.description);
         TextView timeView = (TextView)v.findViewById(R.id.time);
+        Button retweetButton = (Button) v.findViewById(R.id.retweet);
 
-        Tweet tweet = tweetArrayList.get(position);
+        final Tweet tweet = tweetArrayList.get(position);
 
         image.setImageBitmap(tweet.getPublisher().getProfileBitmapImage());
         fromView.setText(tweet.getPublisher().getName());
         descView.setText(tweet.getText());
         timeView.setText(tweet.getCreated_at());
+
+        retweetButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("here", "clicker");
+                List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+                postParams.add(new BasicNameValuePair("id", Long.toString(tweet.getId())));
+                new TwitterApiRequest(TwitterApiRequest.POST_RETWEET, postParams, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, LoginActivity.accessToken.getToken(), LoginActivity.accessToken.getTokenSecret()).execute();
+
+            }
+        });
 
         return v;
     }
