@@ -11,6 +11,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import sdis.twitterclient.R;
 
 
@@ -34,7 +36,7 @@ public class NavbarAdapter extends RecyclerView.Adapter<NavbarAdapter.ViewHolder
     public static class ViewHolder extends RecyclerView.ViewHolder {
         int Holderid;
 
-        Button button;
+        TextView button;
         ImageView imageView;
         ImageView profile;
         TextView Name;
@@ -48,7 +50,7 @@ public class NavbarAdapter extends RecyclerView.Adapter<NavbarAdapter.ViewHolder
             // Here we set the appropriate view in accordance with the the view type as passed when the holder object is created
 
             if(ViewType == TYPE_ITEM) {
-                button = (Button) itemView.findViewById(R.id.rowText); // Creating TextView object with the id of textView from item_row.xml
+                button = (TextView) itemView.findViewById(R.id.rowText); // Creating TextView object with the id of textView from item_row.xml
                 imageView = (ImageView) itemView.findViewById(R.id.rowIcon);// Creating ImageView object with the id of ImageView from item_row.xml
                 Holderid = 1;                                               // setting holder id as 1 as the object being populated are of type item row
             }

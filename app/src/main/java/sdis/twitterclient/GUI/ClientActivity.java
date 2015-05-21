@@ -35,7 +35,7 @@ public class ClientActivity extends ActionBarActivity {
     //This Icons And Titles Are holded in an Array as you can see
 
     String TITLES[] = {"Home","Add Category", "Logout"};
-    int ICONS[] = {R.drawable.ic_drawer,R.drawable.ic_drawer,R.drawable.ic_drawer,R.drawable.ic_drawer,R.drawable.ic_drawer};
+    int ICONS[] = {R.drawable.ic_drawer,R.drawable.ic_action_new,R.drawable.ic_action_cancel,R.drawable.ic_drawer,R.drawable.ic_drawer};
 
     //Similarly we Create a String Resource for the name and email in the header view
     //And we also create a int resource for profile picture in the header view

@@ -35,6 +35,12 @@ public class TimelineFragment extends Fragment {
         ArrayList<Tweet> tweets = new ArrayList<>();
 
         tweets.add(new Tweet("creator", 10202, "created_at", "text"));
+        tweets.add(new Tweet("creator 2", 10202, "created_at", "text"));
+        tweets.add(new Tweet("creator 3", 10202, "created_at", "text"));
+        tweets.add(new Tweet("creator 4", 10202, "created_at", "text"));
+        tweets.add(new Tweet("creator 5", 10202, "created_at", "text"));
+        tweets.add(new Tweet("creator 6", 10202, "created_at", "text"));
+        tweets.add(new Tweet("creator 7", 10202, "created_at", "text"));
         timelineAdapter = new TimelineAdapter(tweets);       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
         // And passing the titles,icons,header view name, header view email,
         // and header view profile picture
