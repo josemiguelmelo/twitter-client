@@ -2,7 +2,7 @@ package sdis.twitterclient.GUI;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import sdis.twitterclient.Models.Tweet;
 import sdis.twitterclient.R;
 
-public class TimelineFragment extends Fragment {
+public class CategoryFragment extends Fragment {
 
     RecyclerView timelineView;
     RecyclerView.Adapter timelineAdapter;                  // Declaring Adapter For Recycler View
@@ -34,7 +34,7 @@ public class TimelineFragment extends Fragment {
 
         ArrayList<Tweet> tweets = new ArrayList<>();
 
-        tweets.add(new Tweet("creator", 10202, "created_at", "text"));
+        tweets.add(new Tweet("creator 2", 10202, "created_at", "text"));
         timelineAdapter = new TimelineAdapter(tweets);       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
         // And passing the titles,icons,header view name, header view email,
         // and header view profile picture

@@ -73,6 +73,7 @@ public class LoginActivity extends ActionBarActivity {
             accessTokenSecretString = mSharedPreferences.getString(PREF_KEY_OAUTH_SECRET, "");
             twitterUserId = mSharedPreferences.getLong(TWITTER_USER_ID, 0);
             accessToken = new AccessToken(accessTokenString, accessTokenSecretString, twitterUserId);
+
             Intent intent = new Intent(LoginActivity.this, ClientActivity.class);
             startActivity(intent);
         }
@@ -103,6 +104,7 @@ public class LoginActivity extends ActionBarActivity {
             builder.setOAuthConsumerKey(TWITTER_CONSUMER_KEY);
             builder.setOAuthConsumerSecret(TWITTER_CONSUMER_SECRET);
             configuration = builder.build();
+
 
             TwitterFactory factory = new TwitterFactory(configuration);
             twitter = factory.getInstance();

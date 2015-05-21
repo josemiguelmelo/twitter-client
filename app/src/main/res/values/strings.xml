@@ -4,6 +4,8 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_logout">Logout</string>
     <string name="title_activity_client">ClientActivity</string>
+    <string name="openDrawer">Open</string>
+    <string name="closeDrawer">Close</string>
 
     <string name="title_section1">Section 1</string>
     <string name="title_section2">Section 2</string>
