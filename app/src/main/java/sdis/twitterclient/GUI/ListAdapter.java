@@ -73,7 +73,11 @@ public class ListAdapter extends BaseAdapter {
                 Log.d("here", "clicker");
                 List<NameValuePair> postParams = new ArrayList<NameValuePair>();
                 postParams.add(new BasicNameValuePair("id", Long.toString(tweet.getId())));
-                new TwitterApiRequest(TwitterApiRequest.POST_RETWEET, postParams, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, LoginActivity.accessToken.getToken(), LoginActivity.accessToken.getTokenSecret()).execute();
+
+                ArrayList<String> requests= new ArrayList<>();
+                requests.add(TwitterApiRequest.POST_RETWEET);
+
+                new TwitterApiRequest(requests, postParams, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, LoginActivity.accessToken.getToken(), LoginActivity.accessToken.getTokenSecret()).execute();
 
             }
         });

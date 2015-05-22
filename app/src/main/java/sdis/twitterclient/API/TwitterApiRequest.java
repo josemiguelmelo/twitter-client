@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import oauth.signpost.OAuthConsumer;
@@ -56,7 +57,7 @@ public class TwitterApiRequest extends AsyncTask{
 
     private static final int REQUEST_TWEETS_NUMBER = 200;
 
-    private String request;
+    private ArrayList<String> requests;
 
     private OAuthConsumer consumer;
 
@@ -65,12 +66,12 @@ public class TwitterApiRequest extends AsyncTask{
 
     private List<NameValuePair> postParams;
 
-    public TwitterApiRequest(String request, String consumerKey, String consumerSecret, String token, String secretToken){
+    public TwitterApiRequest(ArrayList<String> requests, String consumerKey, String consumerSecret, String token, String secretToken){
         this.consumerKey = consumerKey;
         this.consumerSecret = consumerSecret;
         this.token = token;
         this.secretToken = secretToken;
-        this.request = request;
+        this.requests = requests;
 
         this.consumer = new CommonsHttpOAuthConsumer(this.consumerKey, this.consumerSecret);
         this.consumer.setTokenWithSecret(this.token, this.secretToken);
@@ -78,18 +79,23 @@ public class TwitterApiRequest extends AsyncTask{
         this.postParams = null;
     }
 
-    public TwitterApiRequest(String request, List<NameValuePair> postParams ,String consumerKey, String consumerSecret, String token, String secretToken){
+
+
+
+    public TwitterApiRequest(ArrayList<String> requests, List<NameValuePair> postParams ,String consumerKey, String consumerSecret, String token, String secretToken){
         this.consumerKey = consumerKey;
         this.consumerSecret = consumerSecret;
         this.token = token;
         this.secretToken = secretToken;
-        this.request = request;
+        this.requests = requests;
 
         this.consumer = new CommonsHttpOAuthConsumer(this.consumerKey, this.consumerSecret);
         this.consumer.setTokenWithSecret(this.token, this.secretToken);
 
         this.postParams = postParams;
     }
+
+
 
     public void setPostParams(List<NameValuePair> postParams)
     {
@@ -169,36 +175,38 @@ public class TwitterApiRequest extends AsyncTask{
 
     @Override
     protected Object doInBackground(Object[] params) {
+        HashMap<String, Object> requestResult = new HashMap<>();
 
-            if(this.request.equals(GET_USER_TWEETS)){
-                return getUserTweets();
-            }else if(this.request.equals(GET_TIMELINE_TWEETS)){
-                return getHomeTimelineTweets();
-            }else if(this.request.equals(GET_FRIENDS_LIST)){
-                ArrayList<User> friends = getFriendsList();
-                if(friends.size() == 0)
-                    return null;
-                return friends;
-            }else if(this.request.equals(GET_FOLLOWERS_LIST)){
-
-                return getFollowersList();
-            }else if(this.request.equals(POST_NEW_TWEET)){
+        for(String request : this.requests){
+            if(request.equals(GET_USER_TWEETS)){
+                requestResult.put(GET_USER_TWEETS, getUserTweets());
+            }else if(request.equals(GET_TIMELINE_TWEETS)){
+                requestResult.put(GET_TIMELINE_TWEETS, getHomeTimelineTweets());
+            }else if(request.equals(GET_FRIENDS_LIST)){
+                requestResult.put(GET_FRIENDS_LIST, getFriendsList());
+            }else if(request.equals(GET_FOLLOWERS_LIST)){
+                requestResult.put(GET_FOLLOWERS_LIST, getFollowersList());
+            }else if(request.equals(POST_NEW_TWEET)){
                 if(postParams == null){
                     Log.e("POST PARAMETERS", "Post parameters required not found.");
-                    return null;
+
+                }else{
+                    requestResult.put(POST_NEW_TWEET, postNewTweet());
                 }
-                return postNewTweet();
-            }else if(this.request.equals(POST_RETWEET)){
+
+            }else if(request.equals(POST_RETWEET)){
                 Log.d("Post ret", "ete");
                 if(postParams == null){
                     Log.e("POST PARAMETERS", "Post parameters required not found.");
-                    return null;
+                }else{
+                    requestResult.put(POST_RETWEET, postRetweet());
                 }
-                return postRetweet();
             }
+        }
 
-
-        return null;
+        if(requestResult.size() == 0)
+            return null;
+        return requestResult;
     }
 
 
@@ -314,6 +322,7 @@ public class TwitterApiRequest extends AsyncTask{
         ArrayList<User> friendsList = new ArrayList<User>();
 
         String resultString = null;
+
         try {
 
             long cursor = -1;
@@ -324,6 +333,7 @@ public class TwitterApiRequest extends AsyncTask{
                     params = new ArrayList<NameValuePair>();
                     params.add(new BasicNameValuePair("cursor", Long.toString(cursor)));
                 }
+
 
                 resultString = this.GET(friends_list, params);
 

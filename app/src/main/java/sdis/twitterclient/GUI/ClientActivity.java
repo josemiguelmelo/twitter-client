@@ -1,5 +1,6 @@
 package sdis.twitterclient.GUI;
 
+import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
@@ -20,6 +21,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
+import sdis.twitterclient.Models.Tweet;
 import sdis.twitterclient.Models.User;
 import sdis.twitterclient.R;
 import twitter4j.Twitter;
@@ -48,7 +52,6 @@ public class ClientActivity extends ActionBarActivity {
 
     RecyclerView navBarView;                           // Declaring RecyclerView
     RecyclerView.Adapter navbarAdapter;                        // Declaring Adapter For Recycler View
-    RecyclerView.LayoutManager mLayoutManager;            // Declaring Layout Manager as a linear layout manager
     DrawerLayout Drawer;                                  // Declaring DrawerLayout
 
     ActionBarDrawerToggle mDrawerToggle;                  // Declaring Action Bar Drawer Toggle
@@ -60,6 +63,12 @@ public class ClientActivity extends ActionBarActivity {
     private User user;
 
     public static SharedPreferences mSharedPreferences;
+
+
+    RecyclerView timelineView;
+    public TimelineAdapter timelineAdapter;                  // Declaring Adapter For Recycler View
+    RecyclerView.LayoutManager mLayoutManager;
+
 
 
     private void initUser(){
@@ -89,7 +98,7 @@ public class ClientActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main_client);
 
         toolbar = (Toolbar) findViewById(R.id.tool_bar);
-        toolbar.setTitle("Twitter Client 1");
+        toolbar.setTitle("Twitter Client");
 
         setSupportActionBar(toolbar);
 
@@ -105,25 +114,28 @@ public class ClientActivity extends ActionBarActivity {
         TwitterFactory factory = new TwitterFactory(configuration);
         this.twitter = factory.getInstance(this.accessToken);
 
-
-        Log.d("accessToken", " - " + this.accessToken.getToken());
-
         this.user = new User(this.getApplicationContext(), this.accessToken.getUserId(), this.accessToken);
 
         initUser();
 
-        Log.d("username", " - " + user.getName());
+        this.user.init();
 
 
+        timelineView = (RecyclerView) findViewById(R.id.timelineView);
 
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        timelineView.setHasFixedSize(true);                            // Letting the system know that the list objects are of fixed size
 
-        TimelineFragment timelineFragment = new TimelineFragment();
-        timelineFragment.setContext(this);
 
-        fragmentTransaction.replace(R.id.fragment2, new CategoryFragment(), "category");
-        fragmentTransaction.commit();
+        this.timelineAdapter = new TimelineAdapter(user.getHomeTimeLineTweets());       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
+        // And passing the titles,icons,header view name, header view email,
+        // and header view profile picture
+
+        timelineView.setAdapter(timelineAdapter);                              // Setting the adapter to RecyclerView
+
+        mLayoutManager = new LinearLayoutManager(this);                 // Creating a layout Manager
+
+        timelineView.setLayoutManager(mLayoutManager);
+
 
         navBarView = (RecyclerView) findViewById(R.id.navbarView); // Assigning the RecyclerView Object to the xml View
 

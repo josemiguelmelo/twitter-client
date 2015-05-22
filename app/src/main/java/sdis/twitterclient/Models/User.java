@@ -10,6 +10,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -17,6 +18,7 @@ import sdis.twitterclient.API.DownloadImageTask;
 import sdis.twitterclient.API.TwitterApiRequest;
 import sdis.twitterclient.Database.DatabaseHandler;
 import sdis.twitterclient.GUI.LoginActivity;
+import twitter4j.Twitter;
 import twitter4j.auth.AccessToken;
 
 public class User {
@@ -67,10 +69,34 @@ public class User {
     }
 
     public void init(){
-        this.loadFriends();
-        this.loadFollowers();
-        this.loadTweets();
-        this.loadTimeline();
+        ArrayList<String> requests = new ArrayList<>();
+        requests.add(TwitterApiRequest.GET_FRIENDS_LIST);
+        requests.add(TwitterApiRequest.GET_FOLLOWERS_LIST);
+        requests.add(TwitterApiRequest.GET_USER_TWEETS);
+        requests.add(TwitterApiRequest.GET_TIMELINE_TWEETS);
+
+        TwitterApiRequest apiRequest = new TwitterApiRequest(requests, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, getAccessToken().getToken(), getAccessToken().getTokenSecret());
+
+        try {
+            HashMap<String, Object> apiResult = (HashMap<String, Object>) apiRequest.execute().get();
+
+            this.friendsList = (ArrayList<User>) apiResult.get(TwitterApiRequest.GET_FRIENDS_LIST);
+            this.followersList = (ArrayList<User>) apiResult.get(TwitterApiRequest.GET_FOLLOWERS_LIST);
+            this.tweetsPublished = (ArrayList<Tweet>) apiResult.get(TwitterApiRequest.GET_USER_TWEETS);
+            this.homeTimeLineTweets = (ArrayList<Tweet>) apiResult.get(TwitterApiRequest.GET_TIMELINE_TWEETS);
+
+            for(Tweet tweet: this.getHomeTimeLineTweets()){
+                tweet.setPublisher(getFriendByUsername(tweet.getPublisherUsername()));
+                this.databaseHandler.addTimelineTweet(tweet);
+            }
+
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
     }
 
 
@@ -198,17 +224,19 @@ public class User {
     }
 
     public void postReTweet(String tweet_id){
-        TwitterApiRequest apiRequest = new TwitterApiRequest(TwitterApiRequest.POST_RETWEET, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, accessToken.getToken(), accessToken.getTokenSecret());
+        ArrayList<String> request = new ArrayList<>();
+        request.add(TwitterApiRequest.POST_RETWEET);
+        TwitterApiRequest apiRequest = new TwitterApiRequest(request, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, accessToken.getToken(), accessToken.getTokenSecret());
 
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair("id", tweet_id));
 
         apiRequest.setPostParams(params);
 
-        String result;
+        HashMap<String, Object> result;
         try {
-            result = (String) apiRequest.execute().get();
-            Log.d("post result", result);
+            result = (HashMap<String, Object>) apiRequest.execute().get();
+            Log.d("post result", (String) result.get(TwitterApiRequest.POST_RETWEET));
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -218,17 +246,20 @@ public class User {
 
     public void postTweet(String tweetMessage)
     {
-        TwitterApiRequest apiRequest = new TwitterApiRequest(TwitterApiRequest.POST_NEW_TWEET, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, accessToken.getToken(), accessToken.getTokenSecret());
+
+        ArrayList<String> request = new ArrayList<>();
+        request.add(TwitterApiRequest.POST_NEW_TWEET);
+        TwitterApiRequest apiRequest = new TwitterApiRequest(request, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, accessToken.getToken(), accessToken.getTokenSecret());
 
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair("status", tweetMessage));
 
         apiRequest.setPostParams(params);
 
-        String result;
+        HashMap<String, Object> result;
         try {
-            result = (String) apiRequest.execute().get();
-            Log.d("post result", result);
+            result = (HashMap<String, Object>) apiRequest.execute().get();
+            Log.d("post result", (String) result.get(TwitterApiRequest.POST_NEW_TWEET));
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -237,65 +268,19 @@ public class User {
     }
 
     public void loadFollowers(){
-        TwitterApiRequest apiRequest = new TwitterApiRequest(TwitterApiRequest.GET_FOLLOWERS_LIST, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, getAccessToken().getToken(), getAccessToken().getTokenSecret());
 
-        try {
-            this.followersList = (ArrayList<User>) apiRequest.execute().get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
     }
 
     public void loadFriends(){
-        TwitterApiRequest apiRequest = new TwitterApiRequest(TwitterApiRequest.GET_FRIENDS_LIST, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, getAccessToken().getToken(), getAccessToken().getTokenSecret());
 
-        try {
-            this.friendsList = (ArrayList<User>) apiRequest.execute().get();
-            if(this.friendsList == null){
-                return ;
-            }
-            Log.d("friends list", ""+friendsList.size());
-            for(User user: this.getFriendsList()){
-                user.setProfileBitmapImage();
-                this.databaseHandler.addUserFriend(user);
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
     }
 
     public void loadTweets(){
-        TwitterApiRequest apiRequest = new TwitterApiRequest(TwitterApiRequest.GET_USER_TWEETS, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, getAccessToken().getToken(), getAccessToken().getTokenSecret());
 
-        try {
-            this.tweetsPublished = (ArrayList<Tweet>) apiRequest.execute().get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
     }
 
     public void loadTimeline(){
-        TwitterApiRequest apiRequest = new TwitterApiRequest(TwitterApiRequest.GET_TIMELINE_TWEETS, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, getAccessToken().getToken(), getAccessToken().getTokenSecret());
 
-        try {
-            this.homeTimeLineTweets = (ArrayList<Tweet>) apiRequest.execute().get();
-
-            for(Tweet tweet: this.getHomeTimeLineTweets()){
-                tweet.setPublisher(getFriendByUsername(tweet.getPublisherUsername()));
-                this.databaseHandler.addTimelineTweet(tweet);
-            }
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
     }
 
 

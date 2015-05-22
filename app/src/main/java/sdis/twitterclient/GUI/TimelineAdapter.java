@@ -23,6 +23,18 @@ public class TimelineAdapter  extends RecyclerView.Adapter<TimelineAdapter.ViewH
 
     }
 
+    public void changeList(ArrayList<Tweet> tweets){
+        this.tweets = tweets;
+    }
+
+    public void appendItems(ArrayList<Tweet> tweetsToAppend){
+        this.tweets.addAll(tweetsToAppend);
+    }
+
+    public void addItemToList(Tweet tweet){
+        this.tweets.add(tweet);
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView from;
         ImageView icon;
