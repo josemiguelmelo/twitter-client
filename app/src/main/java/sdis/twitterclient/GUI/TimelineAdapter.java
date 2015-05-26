@@ -23,6 +23,7 @@ public class TimelineAdapter  extends RecyclerView.Adapter<TimelineAdapter.ViewH
 
     }
 
+
     public void changeList(ArrayList<Tweet> tweets){
         this.tweets = tweets;
     }
@@ -60,6 +61,7 @@ public class TimelineAdapter  extends RecyclerView.Adapter<TimelineAdapter.ViewH
         }
 
 
+
     }
 
 
@@ -78,12 +80,15 @@ public class TimelineAdapter  extends RecyclerView.Adapter<TimelineAdapter.ViewH
         viewHolder.from.setText(tweets.get(i).getPublisherUsername());
         viewHolder.description.setText(tweets.get(i).getText());
         viewHolder.time.setText(tweets.get(i).getCreated_at());
+        viewHolder.icon.setImageBitmap(tweets.get(i).getPublisher().getProfileBitmapImage());
     }
 
     @Override
     public int getItemCount() {
         return tweets.size();
     }
+
+
 
 
 }

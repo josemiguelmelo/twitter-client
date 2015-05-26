@@ -176,7 +176,6 @@ public class LoginActivity extends ActionBarActivity {
                         .getQueryParameter(URL_TWITTER_OAUTH_VERIFIER);
 
                 try {
-
                     // Get the access token
                     LoginActivity.this.accessToken = twitter.getOAuthAccessToken(
                             requestToken, verifier);

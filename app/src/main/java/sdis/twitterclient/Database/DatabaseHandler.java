@@ -18,7 +18,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     // All Static variables
     // UserFriendsDatabaseHandler Version
-    private static final int DATABASE_VERSION = 13;
+    private static final int DATABASE_VERSION = 15;
 
     // UserFriendsDatabaseHandler Name
     private static final String DATABASE_NAME = "twitter_client";
@@ -272,11 +272,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
-                int publisherId = Integer.parseInt(cursor.getString(1));
+                long publisherId = Long.parseLong(cursor.getString(1));
 
                 User publisher = getFriend(publisherId);
-
-                Log.d("publisher name", publisher.getName());
 
                 Tweet tweet = new Tweet(publisher.getScreen_name(), Long.parseLong(cursor.getString(0)),
                         cursor.getString(3), cursor.getString(2));

@@ -1,9 +1,12 @@
 package sdis.twitterclient.GUI;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +16,9 @@ import android.widget.TextView;
 
 import org.w3c.dom.Text;
 
+import java.io.Serializable;
+
+import sdis.twitterclient.Models.User;
 import sdis.twitterclient.R;
 
 
@@ -29,6 +35,7 @@ public class NavbarAdapter extends RecyclerView.Adapter<NavbarAdapter.ViewHolder
     private String name;        //String Resource for header View Name
     private String email;       //String Resource for header view email
 
+    private User user;
 
     // Creating a ViewHolder which extends the RecyclerView View Holder
     // ViewHolder are used to to store the inflated views in order to recycle them
@@ -69,13 +76,14 @@ public class NavbarAdapter extends RecyclerView.Adapter<NavbarAdapter.ViewHolder
 
 
 
-    NavbarAdapter(Activity activity, String Titles[], int Icons[], String Name, String Email, int Profile){ // MyAdapter Constructor with titles and icons parameter
+    NavbarAdapter(Activity activity, User user, String Titles[], int Icons[], String Name, String Email){ // MyAdapter Constructor with titles and icons parameter
         // titles, icons, name, email, profile pic are passed from the main activity as we
         mNavTitles = Titles;                //have seen earlier
         mIcons = Icons;
         name = Name;
         email = Email;
         this.activity = activity;
+        this.user = user;
 
     }
 
@@ -121,6 +129,16 @@ public class NavbarAdapter extends RecyclerView.Adapter<NavbarAdapter.ViewHolder
             // position by 1 and pass it to the holder while setting the text and image
             holder.button.setText(mNavTitles[position - 1]); // Setting the Text with the array of our Titles
 
+            if(mNavTitles[position-1].equals("Home")){
+                holder.button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(activity.getLocalClassName().equals("GUI.ClientActivity") == false){
+                            activity.finish();
+                        }
+                    }
+                });
+            }
             if(mNavTitles[position-1].equals("Logout")){
                 holder.button.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -132,10 +150,29 @@ public class NavbarAdapter extends RecyclerView.Adapter<NavbarAdapter.ViewHolder
                     }
                 });
             }
+            if(mNavTitles[position-1].equals("Add Category")){
+                holder.button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(activity.getLocalClassName().equals("GUI.CreateCategoryActivity") == false){
+                            Intent newCategoryIntent = new Intent(activity, CreateCategoryActivity.class);
+                            Bundle mBundle = new Bundle();
+
+                            mBundle.putSerializable("user",user);
+                            newCategoryIntent.putExtras(mBundle);
+                            newCategoryIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                            ((ClientActivity)activity).Drawer.closeDrawer(Gravity.LEFT);
+                            activity.startActivity(newCategoryIntent);
+                        }else{
+                            ((CreateCategoryActivity)activity).Drawer.closeDrawer(Gravity.LEFT);
+                        }
+
+                    }
+                });
+            }
 
 
             holder.imageView.setImageResource(mIcons[position -1]);// Settimg the image with array of our icons
-
         }
         else{          // Similarly we set the resources for header view
             holder.Name.setText(name);

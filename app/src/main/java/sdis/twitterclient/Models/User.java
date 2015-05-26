@@ -9,6 +9,7 @@ import android.util.Log;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,14 +19,15 @@ import sdis.twitterclient.API.DownloadImageTask;
 import sdis.twitterclient.API.TwitterApiRequest;
 import sdis.twitterclient.Database.DatabaseHandler;
 import sdis.twitterclient.GUI.LoginActivity;
+import sdis.twitterclient.GUI.TimelineAdapter;
 import twitter4j.Twitter;
 import twitter4j.auth.AccessToken;
 
-public class User {
+public class User implements Serializable{
     private String name;
     private String screen_name;
     private long id;
-    private AccessToken accessToken;
+    private transient AccessToken accessToken;
 
     private String email;
     private String profileImage;
@@ -33,12 +35,14 @@ public class User {
     private ArrayList<User> friendsList;
 
     private ArrayList<User> followersList;
-    private ArrayList<Tweet> tweetsPublished;
-    private ArrayList<Tweet> homeTimeLineTweets;
+    private transient ArrayList<Tweet> tweetsPublished;
+    private transient ArrayList<Tweet> homeTimeLineTweets;
+    private transient ArrayList<Category> categories;
 
-    private Bitmap profileBitmapImage;
-    private Context context;
-    public DatabaseHandler databaseHandler;
+    public transient Context context;
+    private transient Bitmap profileBitmapImage;
+    public transient DatabaseHandler databaseHandler;
+
 
 
     public User(Context context, long id, String name, String screen_name){
@@ -52,6 +56,7 @@ public class User {
         this.accessToken = null;
         this.context = context;
         this.databaseHandler = new DatabaseHandler(context);
+        this.categories = new ArrayList<>();
     }
 
 
@@ -66,37 +71,84 @@ public class User {
         this.homeTimeLineTweets = new ArrayList<Tweet>();
         this.context = context;
         this.databaseHandler = new DatabaseHandler(context);
+        this.categories = new ArrayList<>();
     }
 
-    public void init(){
-        ArrayList<String> requests = new ArrayList<>();
-        requests.add(TwitterApiRequest.GET_FRIENDS_LIST);
-        requests.add(TwitterApiRequest.GET_FOLLOWERS_LIST);
-        requests.add(TwitterApiRequest.GET_USER_TWEETS);
-        requests.add(TwitterApiRequest.GET_TIMELINE_TWEETS);
+    public void initFromDatabase(){
+        this.friendsList = databaseHandler.getAllFriends();
+        this.homeTimeLineTweets = databaseHandler.getAllTimelineTweets();
+        loadCategories();
 
-        TwitterApiRequest apiRequest = new TwitterApiRequest(requests, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, getAccessToken().getToken(), getAccessToken().getTokenSecret());
-
-        try {
-            HashMap<String, Object> apiResult = (HashMap<String, Object>) apiRequest.execute().get();
-
-            this.friendsList = (ArrayList<User>) apiResult.get(TwitterApiRequest.GET_FRIENDS_LIST);
-            this.followersList = (ArrayList<User>) apiResult.get(TwitterApiRequest.GET_FOLLOWERS_LIST);
-            this.tweetsPublished = (ArrayList<Tweet>) apiResult.get(TwitterApiRequest.GET_USER_TWEETS);
-            this.homeTimeLineTweets = (ArrayList<Tweet>) apiResult.get(TwitterApiRequest.GET_TIMELINE_TWEETS);
-
-            for(Tweet tweet: this.getHomeTimeLineTweets()){
-                tweet.setPublisher(getFriendByUsername(tweet.getPublisherUsername()));
-                this.databaseHandler.addTimelineTweet(tweet);
-            }
-
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
+        Log.d("categories", ""+databaseHandler.getAllCategories().get(0).getName() + " " + databaseHandler.getAllCategories().get(1).getName() );
+        if(friendsList == null || homeTimeLineTweets == null){
+            this.friendsList = new ArrayList<>();
+            this.homeTimeLineTweets = new ArrayList<>();
+            loadAllFromAPI();
         }
 
+        for(User friend : this.friendsList){
+            friend.setProfileBitmapImage();
+        }
+
+        for(Tweet tweet: this.getHomeTimeLineTweets()){
+            tweet.setPublisher(getFriendByUsername(tweet.getPublisherUsername()));
+        }
+    }
+
+
+    public void loadAllFromAPI(){
+        Thread th = new Thread() {
+            @Override
+            public void run() {
+                ArrayList<String> requests = new ArrayList<>();
+                requests.add(TwitterApiRequest.GET_FRIENDS_LIST);
+                requests.add(TwitterApiRequest.GET_FOLLOWERS_LIST);
+                requests.add(TwitterApiRequest.GET_USER_TWEETS);
+                requests.add(TwitterApiRequest.GET_TIMELINE_TWEETS);
+
+                TwitterApiRequest apiRequest = new TwitterApiRequest(requests, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, getAccessToken().getToken(), getAccessToken().getTokenSecret());
+
+                try {
+                    HashMap<String, Object> apiResult = (HashMap<String, Object>) apiRequest.execute().get();
+
+                    friendsList = (ArrayList<User>) apiResult.get(TwitterApiRequest.GET_FRIENDS_LIST);
+                    followersList = (ArrayList<User>) apiResult.get(TwitterApiRequest.GET_FOLLOWERS_LIST);
+                    tweetsPublished = (ArrayList<Tweet>) apiResult.get(TwitterApiRequest.GET_USER_TWEETS);
+                    homeTimeLineTweets = (ArrayList<Tweet>) apiResult.get(TwitterApiRequest.GET_TIMELINE_TWEETS);
+
+                    for(User friend : friendsList){
+                        friend.setProfileBitmapImage();
+                        databaseHandler.addUserFriend(friend);
+                    }
+
+                    for(User follower : followersList){
+                        // TODO: followers database table and methods
+                    }
+
+                    for(Tweet tweetPublished : tweetsPublished){
+                        // TODO: tweets published database table and methods
+                    }
+
+                    for(Tweet tweet: getHomeTimeLineTweets()){
+                        User user = getFriendByUsername(tweet.getPublisherUsername());
+                        tweet.setPublisher(user);
+                        databaseHandler.addTimelineTweet(tweet);
+                    }
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        };
+        th.start();
+        try {
+            th.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -105,7 +157,6 @@ public class User {
     }
 
     public void setProfileBitmapImage() {
-        Log.d("url image", getProfileImage());
         try {
             DownloadImageTask getImage = new DownloadImageTask(getProfileImage());
             this.profileBitmapImage = (Bitmap) getImage.execute().get();
@@ -135,6 +186,9 @@ public class User {
     public void setProfileImage(String profileImage) {
         this.profileImage = profileImage;
     }
+
+    public ArrayList<Category> getCategories(){ return this.categories; }
+    public void setCategories(ArrayList<Category> categories){ this.categories = categories; }
 
     public User getFriendByUsername(String username){
         for(User friend : friendsList){
@@ -188,7 +242,6 @@ public class User {
     public void appendTweetsPublished(ArrayList<Tweet> tweetsPublished) {
         this.tweetsPublished.addAll(tweetsPublished);
     }
-
 
     public ArrayList<Tweet> getHomeTimeLineTweets() {
         return homeTimeLineTweets;
@@ -280,8 +333,46 @@ public class User {
     }
 
     public void loadTimeline(){
+        Thread th = new Thread() {
+            @Override
+            public void run() {
+                ArrayList<String> requests = new ArrayList<>();
+                requests.add(TwitterApiRequest.GET_TIMELINE_TWEETS);
 
+                TwitterApiRequest apiRequest = new TwitterApiRequest(requests, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, getAccessToken().getToken(), getAccessToken().getTokenSecret());
+
+                try {
+                    HashMap<String, Object> apiResult = (HashMap<String, Object>) apiRequest.execute().get();
+
+                    homeTimeLineTweets = (ArrayList<Tweet>) apiResult.get(TwitterApiRequest.GET_TIMELINE_TWEETS);
+
+                    for(Tweet tweet: getHomeTimeLineTweets()){
+                        User user = getFriendByUsername(tweet.getPublisherUsername());
+                        tweet.setPublisher(user);
+                        databaseHandler.addTimelineTweet(tweet);
+                    }
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        };
+        th.start();
+        try {
+            th.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 
+    public void loadCategories() {
+        this.categories = databaseHandler.getAllCategories();
+
+        if(this.categories == null)
+            this.categories = new ArrayList<>();
+    }
 }

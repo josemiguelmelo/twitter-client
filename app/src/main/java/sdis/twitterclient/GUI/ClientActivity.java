@@ -9,11 +9,13 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v7.widget.RecyclerView;
@@ -21,8 +23,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
+import sdis.twitterclient.Models.Category;
 import sdis.twitterclient.Models.Tweet;
 import sdis.twitterclient.Models.User;
 import sdis.twitterclient.R;
@@ -38,14 +43,12 @@ public class ClientActivity extends ActionBarActivity {
 //First We Declare Titles And Icons For Our Navigation Drawer List View
     //This Icons And Titles Are holded in an Array as you can see
 
-    String TITLES[] = {"Home","Add Category", "Logout"};
-    int ICONS[] = {R.drawable.ic_drawer,R.drawable.ic_action_new,R.drawable.ic_action_cancel,R.drawable.ic_drawer,R.drawable.ic_drawer};
+    ArrayList<String> TITLES = new ArrayList<>();
+    int ICONS[] = {R.drawable.ic_drawer,R.drawable.ic_action_new,R.drawable.ic_action_cancel,R.drawable.ic_drawer,R.drawable.ic_drawer,R.drawable.ic_drawer };
 
     //Similarly we Create a String Resource for the name and email in the header view
     //And we also create a int resource for profile picture in the header view
 
-    String NAME = "Akash Bangad";
-    String EMAIL = "akash.bangad@android4devs.com";
     int PROFILE = R.drawable.ic_drawer;
 
     private Toolbar toolbar;                              // Declaring the Toolbar Object
@@ -55,7 +58,7 @@ public class ClientActivity extends ActionBarActivity {
     DrawerLayout Drawer;                                  // Declaring DrawerLayout
 
     ActionBarDrawerToggle mDrawerToggle;                  // Declaring Action Bar Drawer Toggle
-
+    public SwipeRefreshLayout refreshLayout;
 
     private Twitter twitter;
     private AccessToken accessToken;
@@ -92,6 +95,34 @@ public class ClientActivity extends ActionBarActivity {
         }
     }
 
+    void refreshItems() {
+        // Load items
+        // ...
+
+        // Load complete
+        onItemsLoadComplete();
+    }
+
+    void onItemsLoadComplete() {
+
+        user.loadTimeline();
+        timelineAdapter.tweets = user.getHomeTimeLineTweets();
+        timelineAdapter.notifyDataSetChanged();
+
+        refreshLayout.setRefreshing(false);
+    }
+
+    private void setRefreshLayoutListener(){
+
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshItems();
+            }
+        });
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,8 +130,8 @@ public class ClientActivity extends ActionBarActivity {
 
         toolbar = (Toolbar) findViewById(R.id.tool_bar);
         toolbar.setTitle("Twitter Client");
-
         setSupportActionBar(toolbar);
+
 
         mSharedPreferences = this.getSharedPreferences(
                 "sdis.twitterclient", Context.MODE_PRIVATE);
@@ -115,16 +146,23 @@ public class ClientActivity extends ActionBarActivity {
         this.twitter = factory.getInstance(this.accessToken);
 
         this.user = new User(this.getApplicationContext(), this.accessToken.getUserId(), this.accessToken);
-
         initUser();
 
-        this.user.init();
+        this.user.initFromDatabase();
+
+        this.TITLES.add("Home");
+        this.TITLES.add("Add Category");
+
+        for(Category c : this.user.getCategories()){
+            this.TITLES.add(c.getName());
+        }
+
+        this.TITLES.add("Logout");
 
 
         timelineView = (RecyclerView) findViewById(R.id.timelineView);
 
         timelineView.setHasFixedSize(true);                            // Letting the system know that the list objects are of fixed size
-
 
         this.timelineAdapter = new TimelineAdapter(user.getHomeTimeLineTweets());       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
         // And passing the titles,icons,header view name, header view email,
@@ -142,7 +180,9 @@ public class ClientActivity extends ActionBarActivity {
         navBarView.setHasFixedSize(true);                            // Letting the system know that the list objects are of fixed size
 
 
-        navbarAdapter = new NavbarAdapter(this,TITLES,ICONS, user.getName(),"@"+user.getScreen_name(),PROFILE);       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
+        String[] titlesArray = new String[TITLES.size()];
+        titlesArray = TITLES.toArray(titlesArray);
+        navbarAdapter = new NavbarAdapter(this, user, titlesArray ,ICONS, user.getName(),"@"+user.getScreen_name());       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
         // And passing the titles,icons,header view name, header view email,
         // and header view profile picture
 
@@ -153,6 +193,7 @@ public class ClientActivity extends ActionBarActivity {
         navBarView.setLayoutManager(mLayoutManager);                 // Setting the layout Manager
 
         Drawer = (DrawerLayout) findViewById(R.id.DrawerLayout);        // Drawer object Assigned to the view
+
         mDrawerToggle = new ActionBarDrawerToggle(this,Drawer,toolbar,R.string.openDrawer,R.string.closeDrawer){
 
             @Override
@@ -174,6 +215,10 @@ public class ClientActivity extends ActionBarActivity {
         Drawer.setDrawerListener(mDrawerToggle); // Drawer Listener set to the Drawer toggle
         mDrawerToggle.syncState();               // Finally we set the drawer toggle sync State
 
+
+
+        refreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
+        setRefreshLayoutListener();
     }
 
 
@@ -194,5 +239,6 @@ public class ClientActivity extends ActionBarActivity {
 
 
     }
+
 
 }
