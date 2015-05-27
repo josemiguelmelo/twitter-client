@@ -21,8 +21,8 @@ import sdis.twitterclient.R;
 
 public class TimelineAdapter  extends RecyclerView.Adapter<TimelineAdapter.ViewHolder> {
 
-    ArrayList<Tweet> tweets;
-    User user;
+    public ArrayList<Tweet> tweets;
+    public User user;
 
     TimelineAdapter(ArrayList<Tweet> tweets, User user){ // MyAdapter Constructor with titles and icons parameter
         // titles, icons, name, email, profile pic are passed from the main activity as we

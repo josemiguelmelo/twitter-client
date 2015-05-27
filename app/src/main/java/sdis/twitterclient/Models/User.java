@@ -1,9 +1,11 @@
 package sdis.twitterclient.Models;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Handler;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 
 import org.apache.http.NameValuePair;
@@ -19,7 +21,9 @@ import sdis.twitterclient.API.DownloadImageTask;
 import sdis.twitterclient.API.TwitterApiRequest;
 import sdis.twitterclient.Database.DatabaseHandler;
 import sdis.twitterclient.GUI.LoginActivity;
+import sdis.twitterclient.GUI.TimelineAPIRequestThread;
 import sdis.twitterclient.GUI.TimelineAdapter;
+import sdis.twitterclient.Util.BoolReference;
 import twitter4j.Twitter;
 import twitter4j.auth.AccessToken;
 
@@ -34,15 +38,14 @@ public class User implements Serializable{
 
     private ArrayList<User> friendsList;
 
-    private ArrayList<User> followersList;
-    private transient ArrayList<Tweet> tweetsPublished;
-    private transient ArrayList<Tweet> homeTimeLineTweets;
-    private transient ArrayList<Category> categories;
+    public ArrayList<User> followersList;
+    public transient ArrayList<Tweet> tweetsPublished;
+    public transient ArrayList<Tweet> homeTimeLineTweets;
+    public transient ArrayList<Category> categories;
 
     public transient Context context;
     private transient Bitmap profileBitmapImage;
     public transient DatabaseHandler databaseHandler;
-
 
 
     public User(Context context, long id, String name, String screen_name){
@@ -110,6 +113,7 @@ public class User implements Serializable{
 
 
     public void loadAllFromAPI(){
+        final User currentUser = this;
         Thread th = new Thread() {
             @Override
             public void run() {
@@ -134,6 +138,9 @@ public class User implements Serializable{
                         databaseHandler.addUserFriend(friend);
                     }
 
+                    databaseHandler.addUserFriend(currentUser);
+
+
                     for(User follower : followersList){
                         // TODO: followers database table and methods
                     }
@@ -145,7 +152,9 @@ public class User implements Serializable{
                     homeTimeLineTweets = invertTweetList(homeTimeLineTweets);
                     for(Tweet tweet : homeTimeLineTweets){
                         User user = getFriendByUsername(tweet.getPublisherUsername());
+
                         tweet.setPublisher(user);
+
                         databaseHandler.addTimelineTweet(tweet);
                     }
 
@@ -209,6 +218,9 @@ public class User implements Serializable{
             if(friend.getScreen_name().equals(username)){
                 return friend;
             }
+        }
+        if(username.equals(this.screen_name)){
+            return this;
         }
         return null;
     }
@@ -370,40 +382,9 @@ public class User implements Serializable{
 
     }
 
-    public void loadTimeline(){
-        Thread th = new Thread() {
-            @Override
-            public void run() {
-                ArrayList<String> requests = new ArrayList<>();
-                requests.add(TwitterApiRequest.GET_TIMELINE_TWEETS);
-
-                TwitterApiRequest apiRequest = new TwitterApiRequest(requests, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, getAccessToken().getToken(), getAccessToken().getTokenSecret());
-
-                try {
-                    HashMap<String, Object> apiResult = (HashMap<String, Object>) apiRequest.execute().get();
-
-                    homeTimeLineTweets = (ArrayList<Tweet>) apiResult.get(TwitterApiRequest.GET_TIMELINE_TWEETS);
-
-                    for(Tweet tweet : homeTimeLineTweets){
-                        User user = getFriendByUsername(tweet.getPublisherUsername());
-                        tweet.setPublisher(user);
-                        databaseHandler.addTimelineTweet(tweet);
-                    }
-
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        };
+    public void loadTimeline(TimelineAdapter adapter, SwipeRefreshLayout refreshLayout,  Activity activity){
+        TimelineAPIRequestThread th = new TimelineAPIRequestThread(this, adapter, refreshLayout, activity);
         th.start();
-        try {
-            th.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
 

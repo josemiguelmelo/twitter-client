@@ -35,6 +35,7 @@ import sdis.twitterclient.Models.Category;
 import sdis.twitterclient.Models.Tweet;
 import sdis.twitterclient.Models.User;
 import sdis.twitterclient.R;
+import sdis.twitterclient.Util.BoolReference;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
@@ -78,6 +79,7 @@ public class ClientActivity extends ActionBarActivity {
 
     public boolean initialized = false;
 
+
     private void initUser(){
         Thread th = new Thread(new Runnable(){
             @Override
@@ -86,6 +88,7 @@ public class ClientActivity extends ActionBarActivity {
                     twitter4j.User userTask = twitter.showUser(accessToken.getUserId());
                     user.setName(userTask.getName());
                     user.setScreen_name(userTask.getScreenName());
+                    user.setId(accessToken.getUserId());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -100,19 +103,11 @@ public class ClientActivity extends ActionBarActivity {
     }
 
     void refreshItems() {
-        // Load items
-        // ...
-
-        // Load complete
         onItemsLoadComplete();
     }
 
     void onItemsLoadComplete() {
-        user.loadTimeline();
-        timelineAdapter.tweets = user.getHomeTimeLineTweets();
-        timelineAdapter.notifyDataSetChanged();
-
-        refreshLayout.setRefreshing(false);
+        user.loadTimeline(timelineAdapter, refreshLayout, this);
     }
 
     private void setRefreshLayoutListener(){

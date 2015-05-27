@@ -18,7 +18,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     // All Static variables
     // UserFriendsDatabaseHandler Version
-    private static final int DATABASE_VERSION = 17;
+    private static final int DATABASE_VERSION = 18;
 
     // UserFriendsDatabaseHandler Name
     private static final String DATABASE_NAME = "twitter_client";
