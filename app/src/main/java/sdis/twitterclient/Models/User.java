@@ -74,17 +74,30 @@ public class User implements Serializable{
         this.categories = new ArrayList<>();
     }
 
+    private ArrayList<Tweet> invertTweetList(ArrayList<Tweet> list){
+
+        ArrayList<Tweet> tweetsInverted = new ArrayList<>();
+
+        for(int i = list.size()-1; i >= 0; i--){
+            tweetsInverted.add(list.get(i));
+        }
+
+        return tweetsInverted;
+    }
     public void initFromDatabase(){
         this.friendsList = databaseHandler.getAllFriends();
         this.homeTimeLineTweets = databaseHandler.getAllTimelineTweets();
+
+
         loadCategories();
 
-        Log.d("categories", ""+databaseHandler.getAllCategories().get(0).getName() + " " + databaseHandler.getAllCategories().get(1).getName() );
         if(friendsList == null || homeTimeLineTweets == null){
             this.friendsList = new ArrayList<>();
             this.homeTimeLineTweets = new ArrayList<>();
             loadAllFromAPI();
         }
+        this.homeTimeLineTweets = invertTweetList(homeTimeLineTweets);
+
 
         for(User friend : this.friendsList){
             friend.setProfileBitmapImage();
@@ -129,7 +142,8 @@ public class User implements Serializable{
                         // TODO: tweets published database table and methods
                     }
 
-                    for(Tweet tweet: getHomeTimeLineTweets()){
+                    homeTimeLineTweets = invertTweetList(homeTimeLineTweets);
+                    for(Tweet tweet : homeTimeLineTweets){
                         User user = getFriendByUsername(tweet.getPublisherUsername());
                         tweet.setPublisher(user);
                         databaseHandler.addTimelineTweet(tweet);
@@ -297,6 +311,30 @@ public class User implements Serializable{
         }
     }
 
+    public void postReplyTweet(String tweetMessage, long answerTweedId){
+
+        ArrayList<String> request = new ArrayList<>();
+        request.add(TwitterApiRequest.POST_NEW_TWEET);
+
+        TwitterApiRequest apiRequest = new TwitterApiRequest(request, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, accessToken.getToken(), accessToken.getTokenSecret());
+
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("status", tweetMessage));
+        params.add(new BasicNameValuePair("in_reply_to_status_id", Long.toString(answerTweedId)));
+
+        apiRequest.setPostParams(params);
+
+        HashMap<String, Object> result;
+        try {
+            result = (HashMap<String, Object>) apiRequest.execute().get();
+            Log.d("post result", (String) result.get(TwitterApiRequest.POST_NEW_TWEET));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void postTweet(String tweetMessage)
     {
 
@@ -346,7 +384,7 @@ public class User implements Serializable{
 
                     homeTimeLineTweets = (ArrayList<Tweet>) apiResult.get(TwitterApiRequest.GET_TIMELINE_TWEETS);
 
-                    for(Tweet tweet: getHomeTimeLineTweets()){
+                    for(Tweet tweet : homeTimeLineTweets){
                         User user = getFriendByUsername(tweet.getPublisherUsername());
                         tweet.setPublisher(user);
                         databaseHandler.addTimelineTweet(tweet);

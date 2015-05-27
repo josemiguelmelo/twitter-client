@@ -29,7 +29,7 @@ public class NavbarAdapter extends RecyclerView.Adapter<NavbarAdapter.ViewHolder
     private static final int TYPE_ITEM = 1;
     private Activity activity;
 
-    private String mNavTitles[]; // String Array to store the passed titles Value from MainActivity.java
+    public String mNavTitles[]; // String Array to store the passed titles Value from MainActivity.java
     private int mIcons[];       // Int Array to store the passed icons resource value from MainActivity.java
 
     private String name;        //String Resource for header View Name
@@ -150,6 +150,31 @@ public class NavbarAdapter extends RecyclerView.Adapter<NavbarAdapter.ViewHolder
                     }
                 });
             }
+            if(mNavTitles[position-1].equals("Categories")){
+                holder.button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(activity.getLocalClassName().equals("GUI.CategoriesActivity") == false){
+                            Intent categoriesIntent = new Intent(activity, CategoriesActivity.class);
+                            Bundle mBundle = new Bundle();
+
+                            mBundle.putSerializable("user" ,user);
+                            categoriesIntent.putExtras(mBundle);
+                            categoriesIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                            activity.startActivity(categoriesIntent);
+
+                            if(activity.getLocalClassName().equals("GUI.ClientActivity") == false){
+                                activity.finish();
+                            }else{
+                                ((ClientActivity)activity).Drawer.closeDrawer(Gravity.LEFT);
+                            }
+                        }else{
+                            ((CategoriesActivity)activity).Drawer.closeDrawer(Gravity.LEFT);
+                        }
+
+                    }
+                });
+            }
             if(mNavTitles[position-1].equals("Add Category")){
                 holder.button.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -161,8 +186,12 @@ public class NavbarAdapter extends RecyclerView.Adapter<NavbarAdapter.ViewHolder
                             mBundle.putSerializable("user",user);
                             newCategoryIntent.putExtras(mBundle);
                             newCategoryIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                            ((ClientActivity)activity).Drawer.closeDrawer(Gravity.LEFT);
                             activity.startActivity(newCategoryIntent);
+                            if(activity.getLocalClassName().equals("GUI.ClientActivity") == false){
+                                activity.finish();
+                            }else{
+                                ((ClientActivity)activity).Drawer.closeDrawer(Gravity.LEFT);
+                            }
                         }else{
                             ((CreateCategoryActivity)activity).Drawer.closeDrawer(Gravity.LEFT);
                         }

@@ -32,7 +32,7 @@ import twitter4j.auth.AccessToken;
 import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 
-public class CreateCategoryActivity extends ActionBarActivity {
+public class CategoriesActivity extends ActionBarActivity {
 
 
     //First We Declare Titles And Icons For Our Navigation Drawer List View
@@ -64,65 +64,47 @@ public class CreateCategoryActivity extends ActionBarActivity {
 
     ArrayList<User> categoryUser = new ArrayList<>();
 
+
+
+    RecyclerView categoriesView;
+    public CategoriesAdapter categoriesAdapter;                  // Declaring Adapter For Recycler View
     RecyclerView.LayoutManager mLayoutManager;
-
-    Button categoryButton;
-
-    EditText categoryNameInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_create_category);
+        setContentView(R.layout.activity_categories);
 
         toolbar = (Toolbar) findViewById(R.id.tool_bar);
         toolbar.setTitle("Twitter Client");
         setSupportActionBar(toolbar);
 
 
-        LinearLayout createCategoryList = (LinearLayout) findViewById(R.id.friendsCategoryList);
-
         this.user = (User) getIntent().getSerializableExtra("user");
+        this.user.databaseHandler = new DatabaseHandler(getApplication());
+        this.user.loadCategories();
 
-        categoryNameInput = (EditText) findViewById(R.id.categoryName);
 
-        this.categoryButton = (Button) findViewById(R.id.createCategoryButton);
+        categoriesView = (RecyclerView) findViewById(R.id.categoriesView);
 
-        this.categoryButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(categoryNameInput.getText().toString().equals("")){
-                    return;
-                }
-                DatabaseHandler db = new DatabaseHandler(getApplication());
-                Category c = new Category(categoryNameInput.getText().toString());
-                c.setUsers(categoryUser);
-                db.addCategory(c);
-                finish();
-            }
-        });
+        categoriesView.setHasFixedSize(true);                            // Letting the system know that the list objects are of fixed size
 
-        for(User user1 : this.user.getFriendsList()){
-            final CheckBox checkBox = new CheckBox(this);
-            final User userLinkedToCheckBox = user1;
-            checkBox.setText(user1.getScreen_name());
-            checkBox.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    categoryUser.add(userLinkedToCheckBox);
-                }
-            });
+        this.categoriesAdapter = new CategoriesAdapter(user.getCategories(), user);       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
+        // And passing the titles,icons,header view name, header view email,
+        // and header view profile picture
 
-            createCategoryList.addView(checkBox);
-        }
+        categoriesView.setAdapter(categoriesAdapter);                              // Setting the adapter to RecyclerView
+
+        mLayoutManager = new LinearLayoutManager(this);                 // Creating a layout Manager
+
+        categoriesView.setLayoutManager(mLayoutManager);
+
 
         navBarView = (RecyclerView) findViewById(R.id.navbarView); // Assigning the RecyclerView Object to the xml View
 
         navBarView.setHasFixedSize(true);                            // Letting the system know that the list objects are of fixed size
 
-        Log.d("user null", user.getName() );
-
-        navbarAdapter = new NavbarAdapter(this, user, TITLES, ICONS, user.getName(),"@"+user.getScreen_name());       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
+        navbarAdapter = new NavbarAdapter(this, user, TITLES ,ICONS, user.getName(),"@"+user.getScreen_name());       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
         // And passing the titles,icons,header view name, header view email,
         // and header view profile picture
 
@@ -133,6 +115,7 @@ public class CreateCategoryActivity extends ActionBarActivity {
         navBarView.setLayoutManager(mLayoutManager);                 // Setting the layout Manager
 
         Drawer = (DrawerLayout) findViewById(R.id.DrawerLayout);        // Drawer object Assigned to the view
+
         mDrawerToggle = new ActionBarDrawerToggle(this,Drawer,toolbar,R.string.openDrawer,R.string.closeDrawer){
 
             @Override

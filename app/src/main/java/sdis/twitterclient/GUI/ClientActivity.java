@@ -1,9 +1,11 @@
 package sdis.twitterclient.GUI;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -14,6 +16,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -21,6 +24,7 @@ import android.view.MenuItem;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import java.lang.reflect.Array;
@@ -43,8 +47,8 @@ public class ClientActivity extends ActionBarActivity {
 //First We Declare Titles And Icons For Our Navigation Drawer List View
     //This Icons And Titles Are holded in an Array as you can see
 
-    ArrayList<String> TITLES = new ArrayList<>();
-    int ICONS[] = {R.drawable.ic_drawer,R.drawable.ic_action_new,R.drawable.ic_action_cancel,R.drawable.ic_drawer,R.drawable.ic_drawer,R.drawable.ic_drawer };
+    String TITLES[] = {"Home","Add Category", "Categories", "Logout"};
+    int ICONS[] = {R.drawable.ic_drawer,R.drawable.ic_action_new,R.drawable.ic_drawer,R.drawable.ic_action_cancel,R.drawable.ic_drawer,R.drawable.ic_drawer };
 
     //Similarly we Create a String Resource for the name and email in the header view
     //And we also create a int resource for profile picture in the header view
@@ -72,7 +76,7 @@ public class ClientActivity extends ActionBarActivity {
     public TimelineAdapter timelineAdapter;                  // Declaring Adapter For Recycler View
     RecyclerView.LayoutManager mLayoutManager;
 
-
+    public boolean initialized = false;
 
     private void initUser(){
         Thread th = new Thread(new Runnable(){
@@ -104,7 +108,6 @@ public class ClientActivity extends ActionBarActivity {
     }
 
     void onItemsLoadComplete() {
-
         user.loadTimeline();
         timelineAdapter.tweets = user.getHomeTimeLineTweets();
         timelineAdapter.notifyDataSetChanged();
@@ -121,6 +124,46 @@ public class ClientActivity extends ActionBarActivity {
             }
         });
 
+    }
+
+    private void createTweetAlertDialog(){
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                this);
+
+        // set title
+        alertDialogBuilder.setTitle("Your Title");
+
+        // Set up the input
+        final EditText tweetText = new EditText(this);
+// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        tweetText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        alertDialogBuilder.setView(tweetText);
+
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle("Post new tweet")
+                .setCancelable(false)
+                .setPositiveButton("Post",new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,int id) {
+                        // if this button is clicked, close
+                        // current activity
+                        user.postTweet(tweetText.getText().toString());
+                    }
+                })
+                .setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,int id) {
+                        // if this button is clicked, just close
+                        // the dialog box and do nothing
+                        dialog.cancel();
+                    }
+                });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
     }
 
     @Override
@@ -145,26 +188,16 @@ public class ClientActivity extends ActionBarActivity {
         TwitterFactory factory = new TwitterFactory(configuration);
         this.twitter = factory.getInstance(this.accessToken);
 
-        this.user = new User(this.getApplicationContext(), this.accessToken.getUserId(), this.accessToken);
+        this.user = new User(this, this.accessToken.getUserId(), this.accessToken);
         initUser();
 
         this.user.initFromDatabase();
-
-        this.TITLES.add("Home");
-        this.TITLES.add("Add Category");
-
-        for(Category c : this.user.getCategories()){
-            this.TITLES.add(c.getName());
-        }
-
-        this.TITLES.add("Logout");
-
 
         timelineView = (RecyclerView) findViewById(R.id.timelineView);
 
         timelineView.setHasFixedSize(true);                            // Letting the system know that the list objects are of fixed size
 
-        this.timelineAdapter = new TimelineAdapter(user.getHomeTimeLineTweets());       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
+        this.timelineAdapter = new TimelineAdapter(user.getHomeTimeLineTweets(), user);       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
         // And passing the titles,icons,header view name, header view email,
         // and header view profile picture
 
@@ -179,10 +212,7 @@ public class ClientActivity extends ActionBarActivity {
 
         navBarView.setHasFixedSize(true);                            // Letting the system know that the list objects are of fixed size
 
-
-        String[] titlesArray = new String[TITLES.size()];
-        titlesArray = TITLES.toArray(titlesArray);
-        navbarAdapter = new NavbarAdapter(this, user, titlesArray ,ICONS, user.getName(),"@"+user.getScreen_name());       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
+        navbarAdapter = new NavbarAdapter(this, user, TITLES ,ICONS, user.getName(),"@"+user.getScreen_name());       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
         // And passing the titles,icons,header view name, header view email,
         // and header view profile picture
 
@@ -216,9 +246,10 @@ public class ClientActivity extends ActionBarActivity {
         mDrawerToggle.syncState();               // Finally we set the drawer toggle sync State
 
 
-
         refreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
         setRefreshLayoutListener();
+
+        initialized = true;
     }
 
 
