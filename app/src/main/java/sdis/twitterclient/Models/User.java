@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
 import org.apache.http.NameValuePair;
@@ -86,6 +87,7 @@ public class User implements Serializable{
 
         return tweetsInverted;
     }
+
     public void initFromDatabase(){
         this.friendsList = databaseHandler.getAllFriends();
         this.homeTimeLineTweets = databaseHandler.getAllTimelineTweets();
@@ -151,9 +153,8 @@ public class User implements Serializable{
                     homeTimeLineTweets = invertTweetList(homeTimeLineTweets);
                     for(Tweet tweet : homeTimeLineTweets){
                         User user = getFriendByUsername(tweet.getPublisherUsername());
-
+                        tweet.setRead(true);
                         tweet.setPublisher(user);
-
                         databaseHandler.addTimelineTweet(tweet);
                     }
 
@@ -381,8 +382,8 @@ public class User implements Serializable{
 
     }
 
-    public void loadTimeline(TimelineAdapter adapter, SwipeRefreshLayout refreshLayout,  Activity activity){
-        TimelineAPIRequestThread th = new TimelineAPIRequestThread(this, adapter, refreshLayout, activity);
+    public void loadTimeline(RecyclerView timelineView, TimelineAdapter adapter, SwipeRefreshLayout refreshLayout,  Activity activity){
+        TimelineAPIRequestThread th = new TimelineAPIRequestThread(this, timelineView, adapter, refreshLayout, activity);
         th.start();
     }
 
@@ -398,5 +399,25 @@ public class User implements Serializable{
 
         if(this.categories == null)
             this.categories = new ArrayList<>();
+    }
+
+
+    public boolean isTweetAlreadyLoaded(Tweet tweet){
+        for(Tweet t : homeTimeLineTweets){
+            if(tweet.getId() == t.getId()){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int unreadTweets(){
+        int unread = 0;
+        for(Tweet tweet : homeTimeLineTweets){
+            if(tweet.getRead() == false) {
+                unread++;
+            }
+        }
+        return unread;
     }
 }

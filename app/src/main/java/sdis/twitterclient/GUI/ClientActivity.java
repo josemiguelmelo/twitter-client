@@ -75,7 +75,8 @@ public class ClientActivity extends ActionBarActivity {
 
     RecyclerView timelineView;
     public TimelineAdapter timelineAdapter;                  // Declaring Adapter For Recycler View
-    RecyclerView.LayoutManager mLayoutManager;
+    RecyclerView.LayoutManager timelineLayoutManager;
+    RecyclerView.LayoutManager navLayoutManager;
 
     public boolean initialized = false;
 
@@ -107,7 +108,7 @@ public class ClientActivity extends ActionBarActivity {
     }
 
     void onItemsLoadComplete() {
-        user.loadTimeline(timelineAdapter, refreshLayout, this);
+        user.loadTimeline(timelineView, timelineAdapter, refreshLayout, this);
     }
 
     private void setRefreshLayoutListener(){
@@ -196,7 +197,6 @@ public class ClientActivity extends ActionBarActivity {
 
         this.user.initFromDatabase();
 
-
         timelineView = (RecyclerView) findViewById(R.id.timelineView);
 
         timelineView.setHasFixedSize(true);                            // Letting the system know that the list objects are of fixed size
@@ -207,10 +207,9 @@ public class ClientActivity extends ActionBarActivity {
 
         timelineView.setAdapter(timelineAdapter);                              // Setting the adapter to RecyclerView
 
-        mLayoutManager = new LinearLayoutManager(this);                 // Creating a layout Manager
+        timelineLayoutManager = new LinearLayoutManager(this);                 // Creating a layout Manager
 
-        timelineView.setLayoutManager(mLayoutManager);
-
+        timelineView.setLayoutManager(timelineLayoutManager);
 
         navBarView = (RecyclerView) findViewById(R.id.navbarView); // Assigning the RecyclerView Object to the xml View
 
@@ -222,9 +221,9 @@ public class ClientActivity extends ActionBarActivity {
 
         navBarView.setAdapter(navbarAdapter);                              // Setting the adapter to RecyclerView
 
-        mLayoutManager = new LinearLayoutManager(this);                 // Creating a layout Manager
+        navLayoutManager = new LinearLayoutManager(this);                 // Creating a layout Manager
 
-        navBarView.setLayoutManager(mLayoutManager);                 // Setting the layout Manager
+        navBarView.setLayoutManager(navLayoutManager);                 // Setting the layout Manager
 
         Drawer = (DrawerLayout) findViewById(R.id.DrawerLayout);        // Drawer object Assigned to the view
 
@@ -254,6 +253,29 @@ public class ClientActivity extends ActionBarActivity {
         setRefreshLayoutListener();
 
         initialized = true;
+        timelineView.scrollToPosition(user.unreadTweets());
+
+        timelineView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+
+                int unread = user.unreadTweets();
+                int first = ((LinearLayoutManager) timelineLayoutManager).findFirstCompletelyVisibleItemPosition();
+
+                if(first < unread)
+                {
+                    user.homeTimeLineTweets.get(first).setRead(true);
+                    user.databaseHandler.updateTimelineTweet(user.homeTimeLineTweets.get(first));
+                }
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+            }
+        });
     }
 
 

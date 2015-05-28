@@ -1,6 +1,8 @@
 package sdis.twitterclient.Models;
 
 
+import android.util.Log;
+
 import sdis.twitterclient.Models.User;
 
 public class Tweet {
@@ -9,6 +11,7 @@ public class Tweet {
     private long id;
     private String text;
 
+    private boolean read;
     private User publisher;
     private User userMentions;
 
@@ -21,6 +24,7 @@ public class Tweet {
         this.id = 0;
         this.publisher = null;
         this.userMentions = null;
+        this.read = false;
     }
 
     public Tweet(String publisherUsername, long id, String created_at, String text){
@@ -30,6 +34,7 @@ public class Tweet {
         this.publisher = publisher;
         this.userMentions = null;
         this.publisherUsername = publisherUsername;
+        this.read = false;
     }
 
 
@@ -77,4 +82,23 @@ public class Tweet {
         this.id = id;
     }
 
+    public int getReadAsInt() {
+        if(read){
+            return 1;
+        }
+        return 0;
+    }
+
+    public boolean getRead(){ return this.read; }
+
+    public void setRead(boolean read){
+        this.read = read;
+    }
+
+    public void setRead(int read){
+        if(read!=0)
+            this.read = true;
+        else
+            this.read = false;
+    }
 }
