@@ -370,16 +370,25 @@ public class User implements Serializable{
         }
     }
 
-    public void loadFollowers(){
+    public void addFriend(User user){
+        ArrayList<String> request = new ArrayList<>();
+        request.add(TwitterApiRequest.ADD_FRIEND);
+        TwitterApiRequest apiRequest = new TwitterApiRequest(request, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, accessToken.getToken(), accessToken.getTokenSecret());
 
-    }
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("screen_name", user.getScreen_name()));
 
-    public void loadFriends(){
+        apiRequest.setPostParams(params);
 
-    }
-
-    public void loadTweets(){
-
+        HashMap<String, Object> result;
+        try {
+            result = (HashMap<String, Object>) apiRequest.execute().get();
+            Log.d("post result", (String) result.get(TwitterApiRequest.ADD_FRIEND));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
     }
 
     public void loadTimeline(RecyclerView timelineView, TimelineAdapter adapter, SwipeRefreshLayout refreshLayout,  Activity activity){
@@ -393,6 +402,37 @@ public class User implements Serializable{
         th.start();
     }
 
+
+    public ArrayList<User> searchUser(String username){
+        ArrayList<String> requests = new ArrayList<>();
+
+        requests.add(TwitterApiRequest.SEARCH_USER);
+
+        ArrayList<User> users = new ArrayList<>();
+
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("q", username));
+
+        TwitterApiRequest apiRequest = new TwitterApiRequest(requests, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, getAccessToken().getToken(), getAccessToken().getTokenSecret());
+
+        apiRequest.setPostParams(params);
+
+        try {
+            HashMap<String, Object> apiResult = (HashMap<String, Object>) apiRequest.execute().get();
+
+            users = (ArrayList<User>) apiResult.get(TwitterApiRequest.SEARCH_USER);
+
+            for(User user : users){
+                user.setProfileBitmapImage();
+            }
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
 
     public void loadCategories() {
         this.categories = databaseHandler.getAllCategories();

@@ -38,9 +38,8 @@ public class CreateCategoryActivity extends ActionBarActivity {
     //First We Declare Titles And Icons For Our Navigation Drawer List View
     //This Icons And Titles Are holded in an Array as you can see
 
-    String TITLES[] = {"Home","Add Category", "Categories", "Logout"};
-
-    int ICONS[] = {R.drawable.home,R.drawable.plus,R.drawable.categories,R.drawable.logout};
+    String TITLES[] = {"Home","Search user","Add Category", "Categories", "Logout"};
+    int ICONS[] = {R.drawable.home,R.drawable.search, R.drawable.plus,R.drawable.categories,R.drawable.logout};
 
 
     //Similarly we Create a String Resource for the name and email in the header view
