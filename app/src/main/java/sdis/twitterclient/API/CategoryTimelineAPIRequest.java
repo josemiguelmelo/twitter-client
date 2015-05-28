@@ -3,6 +3,7 @@ package sdis.twitterclient.API;
 
 import android.app.Activity;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -24,13 +25,15 @@ public class CategoryTimelineAPIRequest extends Thread{
     Activity activity;
     SwipeRefreshLayout refreshLayout;
     Category category;
+    RecyclerView timelineView;
 
-    public CategoryTimelineAPIRequest(Category category, User user, CategoryTimelineAdapter adapter, SwipeRefreshLayout refreshLayout, Activity activity){
+    public CategoryTimelineAPIRequest(Category category, User user, RecyclerView timelineView, CategoryTimelineAdapter adapter, SwipeRefreshLayout refreshLayout, Activity activity){
         this.user=user;
         this.adapter = adapter;
         this.activity = activity;
         this.refreshLayout = refreshLayout;
         this.category = category;
+        this.timelineView = timelineView;
     }
 
 
@@ -44,34 +47,73 @@ public class CategoryTimelineAPIRequest extends Thread{
         try {
             HashMap<String, Object> apiResult = (HashMap<String, Object>) apiRequest.execute().get();
 
-            user.homeTimeLineTweets = (ArrayList<Tweet>) apiResult.get(TwitterApiRequest.GET_TIMELINE_TWEETS);
+            ArrayList<Tweet> timelineAPI = (ArrayList<Tweet>) apiResult.get(TwitterApiRequest.GET_TIMELINE_TWEETS);
 
-            user.homeTimeLineTweets = user.invertTweetList(user.homeTimeLineTweets);
 
+            for(Tweet tweet : timelineAPI){
+                if(user.isTweetAlreadyLoaded(tweet)){
+                    tweet.setRead(true);
+                }else{
+                    tweet.setRead(false);
+                }
+            }
+
+            user.homeTimeLineTweets = user.invertTweetList(timelineAPI);
+
+
+
+            /** Add tweets to database **/
             for(Tweet tweet : user.homeTimeLineTweets){
                 User user = this.user.getFriendByUsername(tweet.getPublisherUsername());
+                if(user == null){
+                    if(tweet.getPublisherUsername().equals(this.user.getScreen_name())){
+                        user = this.user;
+                    }
+                }
+                tweet.setPublisher(user);
 
+                this.user.databaseHandler.addTimelineTweet(tweet);
+            }
+
+            user.homeTimeLineTweets = user.invertTweetList(user.databaseHandler.getAllTimelineTweets());
+
+            /** Load user images **/
+            for(Tweet tweet : user.homeTimeLineTweets){
+                User user = this.user.getFriendByUsername(tweet.getPublisherUsername());
                 if(user == null){
                     if(tweet.getPublisherUsername().equals(this.user.getScreen_name())){
                         user = this.user;
                     }
                 }
 
+
                 tweet.setPublisher(user);
-
-                this.user.databaseHandler.addTimelineTweet(tweet);
             }
-
-            user.initFromDatabase();
 
 
             final ArrayList<Tweet> categoryTweets = new ArrayList<>();
-
+            int numUnread = 0;
             for(Tweet tweet : this.user.getHomeTimeLineTweets()){
                 if(this.category.existsUser(tweet.getPublisher())){
                     categoryTweets.add(tweet);
+                    if(tweet.getRead() == false){
+                        numUnread++;
+                    }
                 }
             }
+
+            final int unreadFinal = numUnread;
+
+
+
+            activity.runOnUiThread(new Thread(){
+                public void run(){
+                    refreshLayout.setRefreshing(false);
+                    adapter.changeList(user.homeTimeLineTweets);
+                    adapter.notifyDataSetChanged();
+                    timelineView.scrollToPosition(unreadFinal + 2);
+                }
+            });
 
             activity.runOnUiThread(new Thread(){
                 public void run(){

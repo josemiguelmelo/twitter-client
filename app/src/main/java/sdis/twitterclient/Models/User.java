@@ -388,8 +388,8 @@ public class User implements Serializable{
     }
 
 
-    public void loadCategoryTimeline(Category category, CategoryTimelineAdapter adapter, SwipeRefreshLayout refreshLayout,  Activity activity){
-        CategoryTimelineAPIRequest th = new CategoryTimelineAPIRequest(category, this, adapter, refreshLayout, activity);
+    public void loadCategoryTimeline(RecyclerView timelineView, Category category, CategoryTimelineAdapter adapter, SwipeRefreshLayout refreshLayout,  Activity activity){
+        CategoryTimelineAPIRequest th = new CategoryTimelineAPIRequest(category, this, timelineView, adapter, refreshLayout, activity);
         th.start();
     }
 

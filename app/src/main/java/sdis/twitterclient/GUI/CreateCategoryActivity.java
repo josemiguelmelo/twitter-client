@@ -148,6 +148,8 @@ public class CreateCategoryActivity extends ActionBarActivity {
         Drawer.setDrawerListener(mDrawerToggle); // Drawer Listener set to the Drawer toggle
         mDrawerToggle.syncState();               // Finally we set the drawer toggle sync State
 
+
+
     }
 
 

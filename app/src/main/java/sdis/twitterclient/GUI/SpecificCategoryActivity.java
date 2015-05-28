@@ -79,7 +79,8 @@ public class SpecificCategoryActivity extends ActionBarActivity {
 
     RecyclerView timelineView;
     public CategoryTimelineAdapter timelineAdapter;                  // Declaring Adapter For Recycler View
-    RecyclerView.LayoutManager mLayoutManager;
+    RecyclerView.LayoutManager timelineLayoutManager;
+    RecyclerView.LayoutManager navLayoutManager;
 
     public boolean initialized = false;
 
@@ -91,7 +92,7 @@ public class SpecificCategoryActivity extends ActionBarActivity {
     }
 
     void onItemsLoadComplete() {
-        user.loadCategoryTimeline(category, timelineAdapter, refreshLayout, this);
+        user.loadCategoryTimeline(timelineView, category, timelineAdapter, refreshLayout, this);
     }
 
     private void setRefreshLayoutListener(){
@@ -195,9 +196,9 @@ public class SpecificCategoryActivity extends ActionBarActivity {
 
         timelineView.setAdapter(timelineAdapter);                              // Setting the adapter to RecyclerView
 
-        mLayoutManager = new LinearLayoutManager(this);                 // Creating a layout Manager
+        timelineLayoutManager = new LinearLayoutManager(this);                 // Creating a layout Manager
 
-        timelineView.setLayoutManager(mLayoutManager);
+        timelineView.setLayoutManager(timelineLayoutManager);
 
 
         navBarView = (RecyclerView) findViewById(R.id.navbarView); // Assigning the RecyclerView Object to the xml View
@@ -210,9 +211,9 @@ public class SpecificCategoryActivity extends ActionBarActivity {
 
         navBarView.setAdapter(navbarAdapter);                              // Setting the adapter to RecyclerView
 
-        mLayoutManager = new LinearLayoutManager(this);                 // Creating a layout Manager
+        navLayoutManager = new LinearLayoutManager(this);                 // Creating a layout Manager
 
-        navBarView.setLayoutManager(mLayoutManager);                 // Setting the layout Manager
+        navBarView.setLayoutManager(navLayoutManager);                 // Setting the layout Manager
 
         Drawer = (DrawerLayout) findViewById(R.id.DrawerLayout);        // Drawer object Assigned to the view
 
@@ -242,6 +243,30 @@ public class SpecificCategoryActivity extends ActionBarActivity {
         setRefreshLayoutListener();
 
         initialized = true;
+
+        timelineView.scrollToPosition(user.unreadTweets());
+
+        timelineView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+
+                int unread = user.unreadTweets();
+                int first = ((LinearLayoutManager) timelineLayoutManager).findFirstCompletelyVisibleItemPosition();
+
+                if(first < unread)
+                {
+                    user.homeTimeLineTweets.get(first).setRead(true);
+                    user.databaseHandler.updateTimelineTweet(user.homeTimeLineTweets.get(first));
+                }
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+            }
+        });
     }
 
 
