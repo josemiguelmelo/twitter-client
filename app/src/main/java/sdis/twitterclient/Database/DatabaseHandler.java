@@ -404,6 +404,20 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return category;
     }
 
+
+    public void removeCategory(Category category){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.delete(TABLE_CATEGORIES, KEY_NAME + " = ?",
+                new String[] { String.valueOf(category.getName()) });
+
+        db.delete(TABLE_CATEGORIES_USERS, KEY_CATEGORY_NAME + " = ?",
+                new String[] { String.valueOf(category.getName()) });
+
+        db.close();
+    }
+
+
     public ArrayList<Category> getAllCategories() {
         ArrayList<Category> categoriesList = new ArrayList<Category>();
         // Select All Query

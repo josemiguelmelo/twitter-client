@@ -48,16 +48,26 @@ public class CategoriesAdapter  extends RecyclerView.Adapter<CategoriesAdapter.V
         this.categories.add(category);
     }
 
+    public void removeItemFromList(Category category){
+        for(int i = 0; i < this.categories.size(); i++){
+            if(categories.get(i).getName().equals(category.getName())){
+                categories.remove(i);
+                return;
+            }
+        }
+    }
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView categoryName;
         Button open;
 
+        Button delete;
 
         public ViewHolder(View itemView,int ViewType) {                 // Creating ViewHolder Constructor with View and viewType As a parameter
             super(itemView);
 
             this.categoryName = (TextView) itemView.findViewById(R.id.categoryName);
             this.open = (Button) itemView.findViewById(R.id.openCategory);
+            this.delete = (Button) itemView.findViewById(R.id.deleteCategory);
         }
 
 
@@ -92,6 +102,15 @@ public class CategoriesAdapter  extends RecyclerView.Adapter<CategoriesAdapter.V
                 categoriesIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                 activity.startActivity(categoriesIntent);
                 activity.finish();
+            }
+        });
+
+        viewHolder.delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                user.databaseHandler.removeCategory(category);
+                removeItemFromList(category);
+                notifyDataSetChanged();
             }
         });
     }
