@@ -25,6 +25,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import java.lang.reflect.Array;
@@ -49,12 +50,11 @@ public class ClientActivity extends ActionBarActivity {
     //This Icons And Titles Are holded in an Array as you can see
 
     String TITLES[] = {"Home","Add Category", "Categories", "Logout"};
-    int ICONS[] = {R.drawable.ic_drawer,R.drawable.ic_action_new,R.drawable.ic_drawer,R.drawable.ic_action_cancel,R.drawable.ic_drawer,R.drawable.ic_drawer };
+    int ICONS[] = {R.drawable.home,R.drawable.plus,R.drawable.categories,R.drawable.logout};
 
     //Similarly we Create a String Resource for the name and email in the header view
     //And we also create a int resource for profile picture in the header view
 
-    int PROFILE = R.drawable.ic_drawer;
 
     private Toolbar toolbar;                              // Declaring the Toolbar Object
 
@@ -168,6 +168,14 @@ public class ClientActivity extends ActionBarActivity {
 
         toolbar = (Toolbar) findViewById(R.id.tool_bar);
         toolbar.setTitle("Twitter Client");
+        ImageButton postTweet = (ImageButton) toolbar.findViewById(R.id.postTweet);
+
+        postTweet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                createTweetAlertDialog();
+            }
+        });
         setSupportActionBar(toolbar);
 
 

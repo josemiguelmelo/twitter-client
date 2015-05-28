@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -49,9 +50,10 @@ public class CategoryTimelineAdapter  extends RecyclerView.Adapter<CategoryTimel
         ImageView icon;
         TextView description;
         TextView time;
-        Button retweet;
+        ImageButton retweet;
 
-        Button reply;
+        TextView date;
+        ImageButton reply;
 
 
         public ViewHolder(View itemView,int ViewType) {                 // Creating ViewHolder Constructor with View and viewType As a parameter
@@ -63,10 +65,11 @@ public class CategoryTimelineAdapter  extends RecyclerView.Adapter<CategoryTimel
             this.description = (TextView) itemView.findViewById(R.id.description);
 
             this.time = (TextView) itemView.findViewById(R.id.time);
+            this.date = (TextView) itemView.findViewById(R.id.date);
 
-            this.retweet = (Button) itemView.findViewById(R.id.retweet);
+            this.retweet = (ImageButton) itemView.findViewById(R.id.retweet);
 
-            this.reply = (Button) itemView.findViewById(R.id.reply);
+            this.reply = (ImageButton) itemView.findViewById(R.id.reply);
 
         }
 
@@ -91,7 +94,15 @@ public class CategoryTimelineAdapter  extends RecyclerView.Adapter<CategoryTimel
         final Tweet tweet = tweets.get(i);
         viewHolder.from.setText(tweet.getPublisherUsername());
         viewHolder.description.setText(tweet.getText());
-        viewHolder.time.setText(tweet.getCreated_at());
+
+        String[] date = tweet.getCreated_at().split(" ");
+
+        String dateString = date[2] + "/" + date[1] + "/" + date[5] ;
+        String timeString = date[3];
+
+        viewHolder.date.setText(dateString);
+        viewHolder.time.setText(timeString);
+
         viewHolder.icon.setImageBitmap(tweet.getPublisher().getProfileBitmapImage());
 
         viewHolder.retweet.setOnClickListener(new View.OnClickListener() {
