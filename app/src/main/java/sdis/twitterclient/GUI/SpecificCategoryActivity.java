@@ -1,39 +1,51 @@
 package sdis.twitterclient.GUI;
 
+import android.app.AlertDialog;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
-import android.os.Bundle;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ListView;
+import android.widget.Toast;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
 import sdis.twitterclient.Database.DatabaseHandler;
 import sdis.twitterclient.Models.Category;
+import sdis.twitterclient.Models.Tweet;
 import sdis.twitterclient.Models.User;
 import sdis.twitterclient.R;
+import sdis.twitterclient.Util.BoolReference;
 import twitter4j.Twitter;
+import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.auth.AccessToken;
 import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 
-public class CategoriesActivity extends ActionBarActivity {
 
+public class SpecificCategoryActivity extends ActionBarActivity {
 
     //First We Declare Titles And Icons For Our Navigation Drawer List View
     //This Icons And Titles Are holded in an Array as you can see
@@ -53,7 +65,7 @@ public class CategoriesActivity extends ActionBarActivity {
     DrawerLayout Drawer;                                  // Declaring DrawerLayout
 
     ActionBarDrawerToggle mDrawerToggle;                  // Declaring Action Bar Drawer Toggle
-
+    public SwipeRefreshLayout refreshLayout;
 
     private Twitter twitter;
     private AccessToken accessToken;
@@ -62,42 +74,119 @@ public class CategoriesActivity extends ActionBarActivity {
 
     public static SharedPreferences mSharedPreferences;
 
-    ArrayList<User> categoryUser = new ArrayList<>();
 
-
-
-    RecyclerView categoriesView;
-    public CategoriesAdapter categoriesAdapter;                  // Declaring Adapter For Recycler View
+    RecyclerView timelineView;
+    public TimelineAdapter timelineAdapter;                  // Declaring Adapter For Recycler View
     RecyclerView.LayoutManager mLayoutManager;
+
+    public boolean initialized = false;
+
+    Category category;
+    private ArrayList<Tweet> categoryTweets = new ArrayList<>();
+
+    void refreshItems() {
+        onItemsLoadComplete();
+    }
+
+    void onItemsLoadComplete() {
+        user.loadTimeline(timelineAdapter, refreshLayout, this);
+    }
+
+    private void setRefreshLayoutListener(){
+
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshItems();
+            }
+        });
+
+    }
+
+    private void createTweetAlertDialog(){
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                this);
+
+        // set title
+        alertDialogBuilder.setTitle("Your Title");
+
+        // Set up the input
+        final EditText tweetText = new EditText(this);
+// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        tweetText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        alertDialogBuilder.setView(tweetText);
+
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle("Post new tweet")
+                .setCancelable(false)
+                .setPositiveButton("Post",new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,int id) {
+                        // if this button is clicked, close
+                        // current activity
+                        user.postTweet(tweetText.getText().toString());
+                    }
+                })
+                .setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,int id) {
+                        // if this button is clicked, just close
+                        // the dialog box and do nothing
+                        dialog.cancel();
+                    }
+                });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+    }
+
+
+    private void loadCategoryTweets(){
+        for(Tweet tweet : this.user.getHomeTimeLineTweets()){
+            if(this.category.existsUser(tweet.getPublisher())){
+                this.categoryTweets.add(tweet);
+            }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_categories);
+        setContentView(R.layout.activity_specific_category);
+
+
+        this.category = (Category) getIntent().getSerializableExtra("category");
+        this.user = (User) getIntent().getSerializableExtra("user");
+        this.user.databaseHandler = new DatabaseHandler(getApplication());
+
+        this.user.initFromDatabase();
+        Log.d("last db tweet", this.user.getHomeTimeLineTweets().get(0).getCreated_at());
 
         toolbar = (Toolbar) findViewById(R.id.tool_bar);
-        toolbar.setTitle("Twitter Client");
+        toolbar.setTitle(category.getName());
         setSupportActionBar(toolbar);
 
 
-        this.user = (User) getIntent().getSerializableExtra("user");
-        this.user.databaseHandler = new DatabaseHandler(getApplication());
-        this.user.loadCategories();
+        loadCategoryTweets();
 
 
-        categoriesView = (RecyclerView) findViewById(R.id.categoriesView);
 
-        categoriesView.setHasFixedSize(true);                            // Letting the system know that the list objects are of fixed size
+        timelineView = (RecyclerView) findViewById(R.id.timelineView);
 
-        this.categoriesAdapter = new CategoriesAdapter(user.getCategories(), user, this);       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
+        timelineView.setHasFixedSize(true);                            // Letting the system know that the list objects are of fixed size
+
+        this.timelineAdapter = new TimelineAdapter(this.categoryTweets, user);       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
         // And passing the titles,icons,header view name, header view email,
         // and header view profile picture
 
-        categoriesView.setAdapter(categoriesAdapter);                              // Setting the adapter to RecyclerView
+        timelineView.setAdapter(timelineAdapter);                              // Setting the adapter to RecyclerView
 
         mLayoutManager = new LinearLayoutManager(this);                 // Creating a layout Manager
 
-        categoriesView.setLayoutManager(mLayoutManager);
+        timelineView.setLayoutManager(mLayoutManager);
 
 
         navBarView = (RecyclerView) findViewById(R.id.navbarView); // Assigning the RecyclerView Object to the xml View
@@ -137,13 +226,17 @@ public class CategoriesActivity extends ActionBarActivity {
         Drawer.setDrawerListener(mDrawerToggle); // Drawer Listener set to the Drawer toggle
         mDrawerToggle.syncState();               // Finally we set the drawer toggle sync State
 
+
+        refreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
+        setRefreshLayoutListener();
+
+        initialized = true;
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_create_category, menu);
         return true;
     }
 
@@ -152,13 +245,12 @@ public class CategoriesActivity extends ActionBarActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
 
         return super.onOptionsItemSelected(item);
+
+
     }
+
+
 }

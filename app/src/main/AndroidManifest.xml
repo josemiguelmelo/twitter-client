@@ -41,6 +41,10 @@
             android:name=".GUI.CategoriesActivity"
             android:label="@string/title_activity_create_category" >
         </activity>
+        <activity
+            android:name=".GUI.SpecificCategoryActivity"
+            android:label="@string/title_activity_create_category" >
+        </activity>
     </application>
 
 </manifest>
