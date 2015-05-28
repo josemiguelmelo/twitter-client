@@ -1,4 +1,4 @@
-package sdis.twitterclient.GUI;
+package sdis.twitterclient.API;
 
 
 import android.app.Activity;
@@ -10,21 +10,27 @@ import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
 import sdis.twitterclient.API.TwitterApiRequest;
+import sdis.twitterclient.GUI.CategoryTimelineAdapter;
+import sdis.twitterclient.GUI.LoginActivity;
+import sdis.twitterclient.GUI.TimelineAdapter;
+import sdis.twitterclient.Models.Category;
 import sdis.twitterclient.Models.Tweet;
 import sdis.twitterclient.Models.User;
 import sdis.twitterclient.Util.BoolReference;
 
-public class TimelineAPIRequestThread extends Thread{
+public class CategoryTimelineAPIRequest extends Thread{
     User user;
-    TimelineAdapter adapter;
+    CategoryTimelineAdapter adapter;
     Activity activity;
     SwipeRefreshLayout refreshLayout;
+    Category category;
 
-    public TimelineAPIRequestThread(User user, TimelineAdapter adapter, SwipeRefreshLayout refreshLayout, Activity activity){
+    public CategoryTimelineAPIRequest(Category category, User user, CategoryTimelineAdapter adapter, SwipeRefreshLayout refreshLayout, Activity activity){
         this.user=user;
         this.adapter = adapter;
         this.activity = activity;
         this.refreshLayout = refreshLayout;
+        this.category = category;
     }
 
 
@@ -56,13 +62,21 @@ public class TimelineAPIRequestThread extends Thread{
                 this.user.databaseHandler.addTimelineTweet(tweet);
             }
 
+            user.initFromDatabase();
 
-            user.homeTimeLineTweets = user.invertTweetList(user.homeTimeLineTweets);
+
+            final ArrayList<Tweet> categoryTweets = new ArrayList<>();
+
+            for(Tweet tweet : this.user.getHomeTimeLineTweets()){
+                if(this.category.existsUser(tweet.getPublisher())){
+                    categoryTweets.add(tweet);
+                }
+            }
 
             activity.runOnUiThread(new Thread(){
                 public void run(){
                     refreshLayout.setRefreshing(false);
-                    adapter.changeList(user.homeTimeLineTweets);
+                    adapter.changeList(categoryTweets);
                     adapter.notifyDataSetChanged();
                 }
             });

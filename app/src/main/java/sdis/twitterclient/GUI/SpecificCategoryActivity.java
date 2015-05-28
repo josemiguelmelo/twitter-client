@@ -76,7 +76,7 @@ public class SpecificCategoryActivity extends ActionBarActivity {
 
 
     RecyclerView timelineView;
-    public TimelineAdapter timelineAdapter;                  // Declaring Adapter For Recycler View
+    public CategoryTimelineAdapter timelineAdapter;                  // Declaring Adapter For Recycler View
     RecyclerView.LayoutManager mLayoutManager;
 
     public boolean initialized = false;
@@ -89,7 +89,7 @@ public class SpecificCategoryActivity extends ActionBarActivity {
     }
 
     void onItemsLoadComplete() {
-        user.loadTimeline(timelineAdapter, refreshLayout, this);
+        user.loadCategoryTimeline(category, timelineAdapter, refreshLayout, this);
     }
 
     private void setRefreshLayoutListener(){
@@ -157,13 +157,22 @@ public class SpecificCategoryActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_specific_category);
 
+        this.accessToken = LoginActivity.accessToken;
+
+        ConfigurationBuilder builder = new ConfigurationBuilder();
+        builder.setOAuthConsumerKey(LoginActivity.TWITTER_CONSUMER_KEY);
+        builder.setOAuthConsumerSecret(LoginActivity.TWITTER_CONSUMER_SECRET);
+        Configuration configuration = builder.build();
+        TwitterFactory factory = new TwitterFactory(configuration);
+        this.twitter = factory.getInstance(this.accessToken);
+
 
         this.category = (Category) getIntent().getSerializableExtra("category");
         this.user = (User) getIntent().getSerializableExtra("user");
+        this.user.setAccessToken(this.accessToken);
         this.user.databaseHandler = new DatabaseHandler(getApplication());
 
         this.user.initFromDatabase();
-        Log.d("last db tweet", this.user.getHomeTimeLineTweets().get(0).getCreated_at());
 
         toolbar = (Toolbar) findViewById(R.id.tool_bar);
         toolbar.setTitle(category.getName());
@@ -178,7 +187,7 @@ public class SpecificCategoryActivity extends ActionBarActivity {
 
         timelineView.setHasFixedSize(true);                            // Letting the system know that the list objects are of fixed size
 
-        this.timelineAdapter = new TimelineAdapter(this.categoryTweets, user);       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
+        this.timelineAdapter = new CategoryTimelineAdapter(this.categoryTweets, user);       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
         // And passing the titles,icons,header view name, header view email,
         // and header view profile picture
 

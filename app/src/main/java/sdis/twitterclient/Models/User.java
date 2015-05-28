@@ -4,7 +4,6 @@ package sdis.twitterclient.Models;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 
@@ -17,14 +16,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import sdis.twitterclient.API.CategoryTimelineAPIRequest;
 import sdis.twitterclient.API.DownloadImageTask;
 import sdis.twitterclient.API.TwitterApiRequest;
 import sdis.twitterclient.Database.DatabaseHandler;
+import sdis.twitterclient.GUI.CategoryTimelineAdapter;
 import sdis.twitterclient.GUI.LoginActivity;
-import sdis.twitterclient.GUI.TimelineAPIRequestThread;
+import sdis.twitterclient.API.TimelineAPIRequestThread;
 import sdis.twitterclient.GUI.TimelineAdapter;
-import sdis.twitterclient.Util.BoolReference;
-import twitter4j.Twitter;
 import twitter4j.auth.AccessToken;
 
 public class User implements Serializable{
@@ -384,6 +383,12 @@ public class User implements Serializable{
 
     public void loadTimeline(TimelineAdapter adapter, SwipeRefreshLayout refreshLayout,  Activity activity){
         TimelineAPIRequestThread th = new TimelineAPIRequestThread(this, adapter, refreshLayout, activity);
+        th.start();
+    }
+
+
+    public void loadCategoryTimeline(Category category, CategoryTimelineAdapter adapter, SwipeRefreshLayout refreshLayout,  Activity activity){
+        CategoryTimelineAPIRequest th = new CategoryTimelineAPIRequest(category, this, adapter, refreshLayout, activity);
         th.start();
     }
 

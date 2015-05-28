@@ -188,6 +188,7 @@ public class ClientActivity extends ActionBarActivity {
 
         this.user.initFromDatabase();
 
+
         timelineView = (RecyclerView) findViewById(R.id.timelineView);
 
         timelineView.setHasFixedSize(true);                            // Letting the system know that the list objects are of fixed size
