@@ -40,6 +40,8 @@ public class TimelineAPIRequestThread extends Thread{
 
             user.homeTimeLineTweets = (ArrayList<Tweet>) apiResult.get(TwitterApiRequest.GET_TIMELINE_TWEETS);
 
+            user.homeTimeLineTweets = user.invertTweetList(user.homeTimeLineTweets);
+
             for(Tweet tweet : user.homeTimeLineTweets){
                 User user = this.user.getFriendByUsername(tweet.getPublisherUsername());
 
@@ -53,6 +55,9 @@ public class TimelineAPIRequestThread extends Thread{
 
                 this.user.databaseHandler.addTimelineTweet(tweet);
             }
+
+
+            user.homeTimeLineTweets = user.invertTweetList(user.homeTimeLineTweets);
 
             activity.runOnUiThread(new Thread(){
                 public void run(){

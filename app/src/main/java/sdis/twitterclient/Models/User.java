@@ -77,7 +77,7 @@ public class User implements Serializable{
         this.categories = new ArrayList<>();
     }
 
-    private ArrayList<Tweet> invertTweetList(ArrayList<Tweet> list){
+    public ArrayList<Tweet> invertTweetList(ArrayList<Tweet> list){
 
         ArrayList<Tweet> tweetsInverted = new ArrayList<>();
 
@@ -91,7 +91,6 @@ public class User implements Serializable{
         this.friendsList = databaseHandler.getAllFriends();
         this.homeTimeLineTweets = databaseHandler.getAllTimelineTweets();
 
-
         loadCategories();
 
         if(friendsList == null || homeTimeLineTweets == null){
@@ -99,6 +98,7 @@ public class User implements Serializable{
             this.homeTimeLineTweets = new ArrayList<>();
             loadAllFromAPI();
         }
+
         this.homeTimeLineTweets = invertTweetList(homeTimeLineTweets);
 
 
