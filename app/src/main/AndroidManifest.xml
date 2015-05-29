@@ -25,7 +25,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:host="t4jsample"
+                    android:host="sdis-twitter-client"
                     android:scheme="oauth" />
             </intent-filter>
         </activity>

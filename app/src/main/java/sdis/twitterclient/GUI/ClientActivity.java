@@ -163,6 +163,7 @@ public class ClientActivity extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d("Client", "oncreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_client);
 
@@ -184,7 +185,7 @@ public class ClientActivity extends ActionBarActivity {
         this.twitter = factory.getInstance(this.accessToken);
 
         this.user = new User(this, this.accessToken.getUserId(), this.accessToken);
-        initUser();
+        //initUser();
 
         this.user.initFromDatabase();
 

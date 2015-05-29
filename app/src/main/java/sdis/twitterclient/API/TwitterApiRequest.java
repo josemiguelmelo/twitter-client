@@ -1,12 +1,25 @@
 package sdis.twitterclient.API;
 
+import android.util.Base64;
 import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.math.BigInteger;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.SignatureException;
 import java.util.ArrayList;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
 
@@ -33,6 +46,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
 
 public class TwitterApiRequest extends AsyncTask{
     public static final String POST = "POST";
@@ -44,6 +60,7 @@ public class TwitterApiRequest extends AsyncTask{
 
     public static final String post_new_tweet = "https://api.twitter.com/1.1/statuses/update.json";
     public static final String post_retweet = "https://api.twitter.com/1.1/statuses/retweet/";
+    public static final String verify_credentials = "https://api.twitter.com/1.1/account/verify_credentials.json";
 
 
 
@@ -77,6 +94,17 @@ public class TwitterApiRequest extends AsyncTask{
         this.consumer.setTokenWithSecret(this.token, this.secretToken);
 
         this.postParams = null;
+    }
+
+    public TwitterApiRequest(String consumerKey, String consumerSecret, String token, String secret)
+    {
+        this.consumerKey = consumerKey;
+        this.consumerSecret = consumerSecret;
+        this.token = token;
+        this.secretToken = secret;
+
+        this.consumer = new CommonsHttpOAuthConsumer(this.consumerKey, this.consumerSecret);
+        this.consumer.setTokenWithSecret(this.token, this.secretToken);
     }
 
 
@@ -144,7 +172,7 @@ public class TwitterApiRequest extends AsyncTask{
         return null;
     }
 
-    public String GET(String url, List<NameValuePair> params) throws OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException, IOException {
+    public String GET(String url, List<NameValuePair> params) throws IOException {
         DefaultHttpClient httpclient = new DefaultHttpClient();
         HttpGet request;
 
@@ -156,7 +184,32 @@ public class TwitterApiRequest extends AsyncTask{
             request = new HttpGet(url);
         }
 
-        consumer.sign(request);
+
+        try {
+            consumer.sign(request);
+        } catch (OAuthMessageSignerException e) {
+            e.printStackTrace();
+        } catch (OAuthExpectationFailedException e) {
+            e.printStackTrace();
+        } catch (OAuthCommunicationException e) {
+            e.printStackTrace();
+        }
+
+        Long tsLong = System.currentTimeMillis()/1000;
+        String timestamp = tsLong.toString();
+
+
+        String[][] authData = {
+                {"oauth_consumer_key", "38SSotcpNaprOstWA6jctfmG5"},
+                {"oauth_nonce",  TwitterApiRequest.generateNonce()},
+                {"oauth_signature", ""},
+                {"oauth_signature_method", "HMAC-SHA1"},
+                {"oauth_timestamp", String.valueOf(timestamp)},
+                {"oauth_token", this.token},
+                {"oauth_version", "1.0"}
+        };
+
+        //request.addHeader("Authorization", generateSignature("GET", url, authData, this.secretToken));
 
         HttpResponse response = httpclient.execute(request);
 
@@ -300,12 +353,6 @@ public class TwitterApiRequest extends AsyncTask{
                     followersList.add(user);
                 }
             }
-        } catch (OAuthCommunicationException e) {
-            e.printStackTrace();
-        } catch (OAuthExpectationFailedException e) {
-            e.printStackTrace();
-        } catch (OAuthMessageSignerException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException e) {
@@ -353,12 +400,6 @@ public class TwitterApiRequest extends AsyncTask{
                     friendsList.add(user);
                 }
             }
-        } catch (OAuthCommunicationException e) {
-            e.printStackTrace();
-        } catch (OAuthExpectationFailedException e) {
-            e.printStackTrace();
-        } catch (OAuthMessageSignerException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException e) {
@@ -393,12 +434,6 @@ public class TwitterApiRequest extends AsyncTask{
             }
         } catch (JSONException e) {
             e.printStackTrace();
-        } catch (OAuthExpectationFailedException e) {
-            e.printStackTrace();
-        } catch (OAuthCommunicationException e) {
-            e.printStackTrace();
-        } catch (OAuthMessageSignerException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -431,16 +466,173 @@ public class TwitterApiRequest extends AsyncTask{
 
         } catch (JSONException e) {
             e.printStackTrace();
-        } catch (OAuthExpectationFailedException e) {
-            e.printStackTrace();
-        } catch (OAuthCommunicationException e) {
-            e.printStackTrace();
-        } catch (OAuthMessageSignerException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         return tweets;
+    }
+
+    public static String generateNonce()
+    {
+        // Pick from some letters that won't be easily mistaken for each
+        // other. So, for example, omit o O and 0, 1 l and L.
+        String letters = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
+
+        String pw = "";
+        for (int i=0; i<32; i++)
+        {
+            int index = (int)(new SecureRandom().nextDouble()*letters.length());
+            pw += letters.substring(index, index+1);
+        }
+        return pw;
+    }
+
+    private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
+
+    private static String toHexString(byte[] bytes) {
+        Formatter formatter = new Formatter();
+
+        for (byte b : bytes) {
+            formatter.format("%02x", b);
+        }
+
+        return formatter.toString();
+    }
+
+    public static String calculateRFC2104HMAC(String data, String key)
+            throws SignatureException, NoSuchAlgorithmException, InvalidKeyException
+    {
+        SecretKeySpec signingKey = new SecretKeySpec(key.getBytes(), HMAC_SHA1_ALGORITHM);
+        Mac mac = Mac.getInstance(HMAC_SHA1_ALGORITHM);
+        mac.init(signingKey);
+        return Base64.encodeToString(mac.doFinal(data.getBytes()), Base64.DEFAULT);
+    }
+
+    public static String generateSignature(String method, String url, String[][] data, String secretToken)
+    {
+        int signatureIndex = 0;
+        try {
+        for(int i = 0; i<data.length; i++)
+        {
+            if(data[i][0].equals("oauth_signature"))
+            {
+                signatureIndex = i;
+            }
+        }
+
+        /**
+         * Generation of the signature base string
+         */
+        String signature_base_string =
+                method + "&"+ URLEncoder.encode(url, "UTF-8")+"&";
+        for(int i = 0; i < data.length; i++) {
+            // ignore the empty oauth_signature field
+            if(i != signatureIndex) {
+                signature_base_string +=
+                        URLEncoder.encode(data[i][0], "UTF-8") + "%3D" +
+                                URLEncoder.encode(data[i][1], "UTF-8") + "%26";
+            }
+        }
+        // cut the last appended %26
+        signature_base_string = signature_base_string.substring(0,
+                signature_base_string.length()-3);
+
+        /**
+         * Sign the request
+         */
+        String sig = calculateRFC2104HMAC(signature_base_string, URLEncoder.encode("ytFGceSKDQnc2HE61EYLRuotLeym09WKXzg0h3FE4OnOWahvyk", "UTF-8") + "&" + URLEncoder.encode(secretToken, "UTF-8"));
+        sig = URLEncoder.encode(sig.trim(), "UTF-8");
+        data[signatureIndex][1] = sig;
+
+        /**
+         * Create the header for the request
+         */
+        String header = "OAuth ";
+        for(String[] item : data) {
+            header += item[0]+"=\""+item[1]+"\", ";
+        }
+        // cut off last appended comma
+        header = header.substring(0, header.length()-2);
+            Log.d("Header", header);
+            return header;
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
+
+        return "";
+
+    }
+
+    public long getUserId()
+    {
+        String resultString = "";
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        try {
+            resultString = this.GET(verify_credentials, params);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        JSONObject resultObject = new JSONObject();
+        try {
+            resultObject = new JSONObject(resultString);
+            return resultObject.getLong("id");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+
+    }
+
+
+    public static HashMap<String, String> testRead(String url, String[][] data) {
+        StringBuffer buffer = new StringBuffer();
+        try {
+
+            String header = generateSignature("POST", url, data, "");
+            /**
+             * Listing of all parameters necessary to retrieve a token
+             * (sorted lexicographically as demanded)
+             */
+
+            System.out.println("Header: "+header);
+
+            String charset = "UTF-8";
+            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Accept-Charset", charset);
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            connection.setRequestProperty("Authorization", header);
+            connection.setRequestProperty("User-Agent", "XXXX");
+
+            OutputStream output = connection.getOutputStream();
+            output.write(header.getBytes(charset));
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+
+            String read;
+            while((read = reader.readLine()) != null) {
+                buffer.append(read);
+            }
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
+
+        String response = buffer.toString();
+
+        String[] stringParams = response.split("&");
+        HashMap<String, String> params = new HashMap<String, String>();
+
+        for(String param : stringParams)
+        {
+            String[] separatedParams = param.split("=");
+            params.put(separatedParams[0], separatedParams[1]);
+        }
+
+        return params;
     }
 }
