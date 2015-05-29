@@ -87,6 +87,9 @@ public class CreateCategoryActivity extends ActionBarActivity {
                 if(categoryNameInput.getText().toString().equals("")){
                     return;
                 }
+                if(categoryUser.size() == 0)
+                    return;
+                
                 DatabaseHandler db = new DatabaseHandler(getApplication());
                 Category c = new Category(categoryNameInput.getText().toString());
                 c.setUsers(categoryUser);
@@ -102,7 +105,10 @@ public class CreateCategoryActivity extends ActionBarActivity {
             checkBox.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    categoryUser.add(userLinkedToCheckBox);
+                    if(checkBox.isChecked())
+                        categoryUser.add(userLinkedToCheckBox);
+                    else
+                        categoryUser.remove(userLinkedToCheckBox);
                 }
             });
 
