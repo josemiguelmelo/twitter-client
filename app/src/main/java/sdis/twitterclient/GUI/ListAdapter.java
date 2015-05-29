@@ -76,6 +76,8 @@ public class ListAdapter extends BaseAdapter {
 
                 ArrayList<String> requests= new ArrayList<>();
                 requests.add(TwitterApiRequest.POST_RETWEET);
+                Log.d("access token", LoginActivity.accessToken.getToken());
+                Log.d("secret", LoginActivity.accessToken.getTokenSecret());
 
                 new TwitterApiRequest(requests, postParams, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, LoginActivity.accessToken.getToken(), LoginActivity.accessToken.getTokenSecret()).execute();
 
