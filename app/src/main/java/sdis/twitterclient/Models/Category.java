@@ -1,9 +1,10 @@
 package sdis.twitterclient.Models;
 
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Category {
+public class Category implements Serializable{
     private String name;
     private ArrayList<User> users;
 
@@ -27,7 +28,7 @@ public class Category {
         this.users = users;
     }
 
-    private boolean existsUser(User user){
+    public boolean existsUser(User user){
         for(User userFromList: this.users){
             if(userFromList.getId() == user.getId())
                 return true;

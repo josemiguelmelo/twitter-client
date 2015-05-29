@@ -66,6 +66,8 @@ public class TwitterApiRequest extends AsyncTask {
     public static final String post_new_tweet = "https://api.twitter.com/1.1/statuses/update.json";
     public static final String post_retweet = "https://api.twitter.com/1.1/statuses/retweet/";
     public static final String verify_credentials = "https://api.twitter.com/1.1/account/verify_credentials.json";
+    public static final String search_user = "https://api.twitter.com/1.1/users/search.json";
+    public static final String add_friend = "https://api.twitter.com/1.1/friendships/create.json";
 
 
     public static final String GET_USER_TWEETS = "GET_USER_TWEETS";
@@ -75,6 +77,8 @@ public class TwitterApiRequest extends AsyncTask {
 
     public static final String POST_NEW_TWEET = "POST_NEW_TWEET";
     public static final String POST_RETWEET = "POST_RETWEET";
+    public static final String SEARCH_USER = "SEARCH_USER";
+    public static final String ADD_FRIEND = "ADD_FRIEND";
 
     private static final int REQUEST_TWEETS_NUMBER = 200;
 
@@ -303,14 +307,31 @@ public class TwitterApiRequest extends AsyncTask {
             } else if (request.equals(GET_FOLLOWERS_LIST)) {
                 requestResult.put(GET_FOLLOWERS_LIST, getFollowersList());
             } else if (request.equals(POST_NEW_TWEET)) {
-                if (postParams == null) {
+                if(postParams == null){
+                    Log.e("POST PARAMETERS", "Post parameters required not found.");
+
+                }else{
+                    requestResult.put(POST_NEW_TWEET, postNewTweet());
+                }
+            }else if(request.equals(SEARCH_USER)){
+                requestResult.put(SEARCH_USER, searchUser());
+            }else if(request.equals(POST_NEW_TWEET)){
+                if(postParams == null){
                     Log.e("POST PARAMETERS", "Post parameters required not found.");
 
                 } else {
                     requestResult.put(POST_NEW_TWEET, postNewTweet());
                 }
+            }else if(request.equals(ADD_FRIEND)){
+                if(postParams == null){
+                    Log.e("POST PARAMETERS", "Post parameters required not found.");
 
-            } else if (request.equals(POST_RETWEET)) {
+                }else{
+                    requestResult.put(ADD_FRIEND, addFriend());
+                }
+            }
+
+            else if(request.equals(POST_RETWEET)){
                 Log.d("Post ret", "ete");
                 if (postParams == null) {
                     Log.e("POST PARAMETERS", "Post parameters required not found.");
@@ -335,7 +356,31 @@ public class TwitterApiRequest extends AsyncTask {
         return -1;
     }
 
-    public String postRetweet() {
+    private String getScreenNameFromParams(List<NameValuePair> paramsList){
+        for(NameValuePair param : paramsList){
+            if(param.getName().equals("screen_name")){
+                return param.getValue();
+            }
+        }
+        return null;
+    }
+
+
+    public String addFriend(){
+
+        String postResponse = null;
+
+        try {
+            postResponse = this.POST(add_friend , this.postParams);
+            return postResponse;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return postResponse;
+    }
+
+    public String postRetweet(){
         long tweet_id = this.getIdFromParams(this.postParams);
 
         Log.d("tweet_id", "" + tweet_id);
@@ -692,5 +737,38 @@ public class TwitterApiRequest extends AsyncTask {
         }
 
         return params;
+    }
+
+    /** get user home timeline **/
+    public ArrayList<User> searchUser()
+    {
+
+        ArrayList<User> usersFound = new ArrayList<>();
+        try {
+
+            List<NameValuePair> params = new ArrayList<NameValuePair>();
+            params.add(new BasicNameValuePair("count", Integer.toString(TwitterApiRequest.REQUEST_TWEETS_NUMBER)));
+            params.add(new BasicNameValuePair("q", postParams.get(0).getValue()));
+
+            String resultString = this.GET(search_user, params);
+
+            JSONArray usersArray = new JSONArray(resultString);
+
+            for(int i = 0; i < usersArray.length(); i++){
+                JSONObject userObject = usersArray.getJSONObject(i);
+
+                User user = new User(null, userObject.getLong("id"), userObject.getString("name"), userObject.getString("screen_name"));
+                user.setProfileImage(userObject.getString("profile_image_url"));
+
+                usersFound.add(user);
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return usersFound;
     }
 }

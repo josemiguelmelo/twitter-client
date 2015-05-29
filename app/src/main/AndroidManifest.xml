@@ -7,7 +7,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/twitter_client_logo"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
@@ -39,6 +39,14 @@
         </activity>
         <activity
             android:name=".GUI.CategoriesActivity"
+            android:label="@string/title_activity_create_category" >
+        </activity>
+        <activity
+            android:name=".GUI.SpecificCategoryActivity"
+            android:label="@string/title_activity_create_category" >
+        </activity>
+        <activity
+            android:name=".GUI.SearchActivity"
             android:label="@string/title_activity_create_category" >
         </activity>
     </application>

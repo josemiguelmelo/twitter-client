@@ -175,6 +175,31 @@ public class NavbarAdapter extends RecyclerView.Adapter<NavbarAdapter.ViewHolder
                     }
                 });
             }
+            if(mNavTitles[position-1].equals("Search user")){
+                holder.button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(activity.getLocalClassName().equals("GUI.SearchActivity") == false){
+                            Intent searchIntent = new Intent(activity, SearchActivity.class);
+                            Bundle mBundle = new Bundle();
+
+                            mBundle.putSerializable("user" ,user);
+                            searchIntent.putExtras(mBundle);
+                            searchIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                            activity.startActivity(searchIntent);
+
+                            if(activity.getLocalClassName().equals("GUI.ClientActivity") == false){
+                                activity.finish();
+                            }else{
+                                ((ClientActivity)activity).Drawer.closeDrawer(Gravity.LEFT);
+                            }
+                        }else{
+                            ((CategoriesActivity)activity).Drawer.closeDrawer(Gravity.LEFT);
+                        }
+
+                    }
+                });
+            }
             if(mNavTitles[position-1].equals("Add Category")){
                 holder.button.setOnClickListener(new View.OnClickListener() {
                     @Override

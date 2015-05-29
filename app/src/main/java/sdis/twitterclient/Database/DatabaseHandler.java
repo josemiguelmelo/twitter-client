@@ -18,7 +18,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     // All Static variables
     // UserFriendsDatabaseHandler Version
-    private static final int DATABASE_VERSION = 21;
+    private static final int DATABASE_VERSION = 22;
 
     // UserFriendsDatabaseHandler Name
     private static final String DATABASE_NAME = "twitter_client";
@@ -36,6 +36,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_CREATED_AT = "created_at";
     private static final String KEY_TEXT = "text";
     private static final String KEY_PUBLISHER_ID = "publisher_id";
+    private static final String KEY_READ = "read";
 
 
 
@@ -61,7 +62,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         String CREATE_TIMELINE_TABLE = "CREATE TABLE " + TABLE_TIMELINE_TWEETS + "("
                 + KEY_ID + " INTEGER," + KEY_PUBLISHER_ID + " TEXT,"
-                + KEY_TEXT + " TEXT, " + KEY_CREATED_AT + " TEXT )";
+                + KEY_TEXT + " TEXT, " + KEY_CREATED_AT + " TEXT, " + KEY_READ + " INTEGER )";
 
 
         String CREATE_CATEGORIES_TABLE = "CREATE TABLE " + TABLE_CATEGORIES + "("
@@ -207,6 +208,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             values.put(KEY_PUBLISHER_ID, tweet.getPublisher().getId());
             values.put(KEY_TEXT, tweet.getText());
             values.put(KEY_CREATED_AT, tweet.getCreated_at());
+            values.put(KEY_READ, tweet.getReadAsInt());
 
             // Inserting Row
             db.insert(TABLE_TIMELINE_TWEETS, null, values);
@@ -226,6 +228,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_PUBLISHER_ID, tweet.getPublisher().getId());
         values.put(KEY_TEXT, tweet.getText());
         values.put(KEY_CREATED_AT, tweet.getCreated_at());
+        values.put(KEY_READ, tweet.getReadAsInt());
 
 
         // updating row
@@ -238,7 +241,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
 
         Cursor cursor = db.query(TABLE_TIMELINE_TWEETS, new String[] { KEY_ID,
-                        KEY_PUBLISHER_ID, KEY_TEXT, KEY_CREATED_AT }, KEY_ID + "=?",
+                        KEY_PUBLISHER_ID, KEY_TEXT, KEY_CREATED_AT, KEY_READ }, KEY_ID + "=?",
                 new String[] { Long.toString(id) }, null, null, null, null);
 
         if (cursor.getCount() == 0)
@@ -252,6 +255,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         Tweet tweet = new Tweet(publisher.getScreen_name(), Long.parseLong(cursor.getString(0)),
                 cursor.getString(3), cursor.getString(2));
+
+        tweet.setRead(cursor.getInt(4));
 
         tweet.setPublisher(publisher);
         // return contact
@@ -278,6 +283,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
                 Tweet tweet = new Tweet(publisher.getScreen_name(), Long.parseLong(cursor.getString(0)),
                         cursor.getString(3), cursor.getString(2));
+
+                tweet.setRead(cursor.getInt(4));
 
                 tweet.setPublisher(publisher);
 
@@ -403,6 +410,20 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         return category;
     }
+
+
+    public void removeCategory(Category category){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.delete(TABLE_CATEGORIES, KEY_NAME + " = ?",
+                new String[] { String.valueOf(category.getName()) });
+
+        db.delete(TABLE_CATEGORIES_USERS, KEY_CATEGORY_NAME + " = ?",
+                new String[] { String.valueOf(category.getName()) });
+
+        db.close();
+    }
+
 
     public ArrayList<Category> getAllCategories() {
         ArrayList<Category> categoriesList = new ArrayList<Category>();

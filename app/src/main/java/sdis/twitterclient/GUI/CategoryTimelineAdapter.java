@@ -20,12 +20,12 @@ import sdis.twitterclient.Models.Tweet;
 import sdis.twitterclient.Models.User;
 import sdis.twitterclient.R;
 
-public class TimelineAdapter  extends RecyclerView.Adapter<TimelineAdapter.ViewHolder> {
+public class CategoryTimelineAdapter  extends RecyclerView.Adapter<CategoryTimelineAdapter.ViewHolder> {
 
     public ArrayList<Tweet> tweets;
     public User user;
 
-    TimelineAdapter(ArrayList<Tweet> tweets, User user){ // MyAdapter Constructor with titles and icons parameter
+    CategoryTimelineAdapter(ArrayList<Tweet> tweets, User user){ // MyAdapter Constructor with titles and icons parameter
         // titles, icons, name, email, profile pic are passed from the main activity as we
         this.tweets = tweets;
         this.user = user;
@@ -50,9 +50,9 @@ public class TimelineAdapter  extends RecyclerView.Adapter<TimelineAdapter.ViewH
         ImageView icon;
         TextView description;
         TextView time;
-        TextView date;
         ImageButton retweet;
 
+        TextView date;
         ImageButton reply;
 
 
@@ -79,7 +79,7 @@ public class TimelineAdapter  extends RecyclerView.Adapter<TimelineAdapter.ViewH
 
 
     @Override
-    public TimelineAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+    public CategoryTimelineAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
 
         View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_item_tweet,viewGroup,false); //Inflating the layout
 
@@ -90,10 +90,11 @@ public class TimelineAdapter  extends RecyclerView.Adapter<TimelineAdapter.ViewH
 
 
     @Override
-    public void onBindViewHolder(TimelineAdapter.ViewHolder viewHolder, int i) {
+    public void onBindViewHolder(CategoryTimelineAdapter.ViewHolder viewHolder, int i) {
         final Tweet tweet = tweets.get(i);
         viewHolder.from.setText(tweet.getPublisherUsername());
         viewHolder.description.setText(tweet.getText());
+
         String[] date = tweet.getCreated_at().split(" ");
 
         String dateString = date[2] + "/" + date[1] + "/" + date[5] ;
@@ -115,44 +116,44 @@ public class TimelineAdapter  extends RecyclerView.Adapter<TimelineAdapter.ViewH
         viewHolder.reply.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-                            user.context);
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                        user.context);
 
-                    // set title
-                    alertDialogBuilder.setTitle("Your Title");
+                // set title
+                alertDialogBuilder.setTitle("Your Title");
 
-                    // Set up the input
-                    final EditText tweetText = new EditText(user.context);
+                // Set up the input
+                final EditText tweetText = new EditText(user.context);
 
-                    tweetText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
-                    tweetText.setText("@" + tweet.getPublisher().getScreen_name() + " ");
-                    alertDialogBuilder.setView(tweetText);
+                tweetText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+                tweetText.setText("@" + tweet.getPublisher().getScreen_name() + " ");
+                alertDialogBuilder.setView(tweetText);
 
-                    // set dialog message
-                    alertDialogBuilder
-                            .setTitle("Reply to tweet")
-                            .setCancelable(false)
-                            .setPositiveButton("Reply",new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog,int id) {
-                                    // if this button is clicked, close
-                                    // current activity
-                                    user.postReplyTweet(tweetText.getText().toString(), tweet.getId());
-                                }
-                            })
-                            .setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog,int id) {
-                                    // if this button is clicked, just close
-                                    // the dialog box and do nothing
-                                    dialog.cancel();
-                                }
-                            });
+                // set dialog message
+                alertDialogBuilder
+                        .setTitle("Reply to tweet")
+                        .setCancelable(false)
+                        .setPositiveButton("Reply",new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,int id) {
+                                // if this button is clicked, close
+                                // current activity
+                                user.postReplyTweet(tweetText.getText().toString(), tweet.getId());
+                            }
+                        })
+                        .setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,int id) {
+                                // if this button is clicked, just close
+                                // the dialog box and do nothing
+                                dialog.cancel();
+                            }
+                        });
 
-                    // create alert dialog
-                    AlertDialog alertDialog = alertDialogBuilder.create();
+                // create alert dialog
+                AlertDialog alertDialog = alertDialogBuilder.create();
 
-                    // show it
-                    alertDialog.show();
-                }
+                // show it
+                alertDialog.show();
+            }
         });
     }
 

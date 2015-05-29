@@ -38,8 +38,9 @@ public class CategoriesActivity extends ActionBarActivity {
     //First We Declare Titles And Icons For Our Navigation Drawer List View
     //This Icons And Titles Are holded in an Array as you can see
 
-    String TITLES[] = {"Home","Add Category", "Categories", "Logout"};
-    int ICONS[] = {R.drawable.ic_drawer,R.drawable.ic_action_new,R.drawable.ic_drawer,R.drawable.ic_action_cancel,R.drawable.ic_drawer,R.drawable.ic_drawer };
+    String TITLES[] = {"Home","Search user","Add Category", "Categories", "Logout"};
+    int ICONS[] = {R.drawable.home,R.drawable.search, R.drawable.plus,R.drawable.categories,R.drawable.logout};
+
 
     //Similarly we Create a String Resource for the name and email in the header view
     //And we also create a int resource for profile picture in the header view
@@ -89,7 +90,7 @@ public class CategoriesActivity extends ActionBarActivity {
 
         categoriesView.setHasFixedSize(true);                            // Letting the system know that the list objects are of fixed size
 
-        this.categoriesAdapter = new CategoriesAdapter(user.getCategories(), user);       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
+        this.categoriesAdapter = new CategoriesAdapter(user.getCategories(), user, this);       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
         // And passing the titles,icons,header view name, header view email,
         // and header view profile picture
 

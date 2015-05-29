@@ -38,13 +38,12 @@ public class CreateCategoryActivity extends ActionBarActivity {
     //First We Declare Titles And Icons For Our Navigation Drawer List View
     //This Icons And Titles Are holded in an Array as you can see
 
-    String TITLES[] = {"Home","Add Category", "Categories", "Logout"};
-    int ICONS[] = {R.drawable.ic_drawer,R.drawable.ic_action_new,R.drawable.ic_drawer,R.drawable.ic_action_cancel,R.drawable.ic_drawer,R.drawable.ic_drawer };
+    String TITLES[] = {"Home","Search user","Add Category", "Categories", "Logout"};
+    int ICONS[] = {R.drawable.home,R.drawable.search, R.drawable.plus,R.drawable.categories,R.drawable.logout};
+
 
     //Similarly we Create a String Resource for the name and email in the header view
     //And we also create a int resource for profile picture in the header view
-
-    int PROFILE = R.drawable.ic_drawer;
 
     private Toolbar toolbar;                              // Declaring the Toolbar Object
 
@@ -54,13 +53,7 @@ public class CreateCategoryActivity extends ActionBarActivity {
 
     ActionBarDrawerToggle mDrawerToggle;                  // Declaring Action Bar Drawer Toggle
 
-
-    private Twitter twitter;
-    private AccessToken accessToken;
-
     private User user;
-
-    public static SharedPreferences mSharedPreferences;
 
     ArrayList<User> categoryUser = new ArrayList<>();
 
@@ -153,6 +146,8 @@ public class CreateCategoryActivity extends ActionBarActivity {
         }; // Drawer Toggle Object Made
         Drawer.setDrawerListener(mDrawerToggle); // Drawer Listener set to the Drawer toggle
         mDrawerToggle.syncState();               // Finally we set the drawer toggle sync State
+
+
 
     }
 

@@ -4,8 +4,8 @@ package sdis.twitterclient.Models;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
 import org.apache.http.NameValuePair;
@@ -17,14 +17,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import sdis.twitterclient.API.CategoryTimelineAPIRequest;
 import sdis.twitterclient.API.DownloadImageTask;
 import sdis.twitterclient.API.TwitterApiRequest;
 import sdis.twitterclient.Database.DatabaseHandler;
+import sdis.twitterclient.GUI.CategoryTimelineAdapter;
 import sdis.twitterclient.GUI.LoginActivity;
-import sdis.twitterclient.GUI.TimelineAPIRequestThread;
+import sdis.twitterclient.API.TimelineAPIRequestThread;
 import sdis.twitterclient.GUI.TimelineAdapter;
-import sdis.twitterclient.Util.BoolReference;
-import twitter4j.Twitter;
 import twitter4j.auth.AccessToken;
 
 public class User implements Serializable{
@@ -77,7 +77,7 @@ public class User implements Serializable{
         this.categories = new ArrayList<>();
     }
 
-    private ArrayList<Tweet> invertTweetList(ArrayList<Tweet> list){
+    public ArrayList<Tweet> invertTweetList(ArrayList<Tweet> list){
 
         ArrayList<Tweet> tweetsInverted = new ArrayList<>();
 
@@ -87,10 +87,10 @@ public class User implements Serializable{
 
         return tweetsInverted;
     }
+
     public void initFromDatabase(){
         this.friendsList = databaseHandler.getAllFriends();
         this.homeTimeLineTweets = databaseHandler.getAllTimelineTweets();
-
 
         loadCategories();
 
@@ -99,6 +99,7 @@ public class User implements Serializable{
             this.homeTimeLineTweets = new ArrayList<>();
             loadAllFromAPI();
         }
+
         this.homeTimeLineTweets = invertTweetList(homeTimeLineTweets);
 
 
@@ -152,9 +153,8 @@ public class User implements Serializable{
                     homeTimeLineTweets = invertTweetList(homeTimeLineTweets);
                     for(Tweet tweet : homeTimeLineTweets){
                         User user = getFriendByUsername(tweet.getPublisherUsername());
-
+                        tweet.setRead(true);
                         tweet.setPublisher(user);
-
                         databaseHandler.addTimelineTweet(tweet);
                     }
 
@@ -370,28 +370,94 @@ public class User implements Serializable{
         }
     }
 
-    public void loadFollowers(){
+    public void addFriend(User user){
+        ArrayList<String> request = new ArrayList<>();
+        request.add(TwitterApiRequest.ADD_FRIEND);
+        TwitterApiRequest apiRequest = new TwitterApiRequest(request, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, accessToken.getToken(), accessToken.getTokenSecret());
 
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("screen_name", user.getScreen_name()));
+
+        apiRequest.setPostParams(params);
+
+        HashMap<String, Object> result;
+        try {
+            result = (HashMap<String, Object>) apiRequest.execute().get();
+            Log.d("post result", (String) result.get(TwitterApiRequest.ADD_FRIEND));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void loadFriends(){
-
-    }
-
-    public void loadTweets(){
-
-    }
-
-    public void loadTimeline(TimelineAdapter adapter, SwipeRefreshLayout refreshLayout,  Activity activity){
-        TimelineAPIRequestThread th = new TimelineAPIRequestThread(this, adapter, refreshLayout, activity);
+    public void loadTimeline(RecyclerView timelineView, TimelineAdapter adapter, SwipeRefreshLayout refreshLayout,  Activity activity){
+        TimelineAPIRequestThread th = new TimelineAPIRequestThread(this, timelineView, adapter, refreshLayout, activity);
         th.start();
     }
 
+
+    public void loadCategoryTimeline(RecyclerView timelineView, Category category, CategoryTimelineAdapter adapter, SwipeRefreshLayout refreshLayout,  Activity activity){
+        CategoryTimelineAPIRequest th = new CategoryTimelineAPIRequest(category, this, timelineView, adapter, refreshLayout, activity);
+        th.start();
+    }
+
+
+    public ArrayList<User> searchUser(String username){
+        ArrayList<String> requests = new ArrayList<>();
+
+        requests.add(TwitterApiRequest.SEARCH_USER);
+
+        ArrayList<User> users = new ArrayList<>();
+
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("q", username));
+
+        TwitterApiRequest apiRequest = new TwitterApiRequest(requests, LoginActivity.TWITTER_CONSUMER_KEY, LoginActivity.TWITTER_CONSUMER_SECRET, getAccessToken().getToken(), getAccessToken().getTokenSecret());
+
+        apiRequest.setPostParams(params);
+
+        try {
+            HashMap<String, Object> apiResult = (HashMap<String, Object>) apiRequest.execute().get();
+
+            users = (ArrayList<User>) apiResult.get(TwitterApiRequest.SEARCH_USER);
+
+            for(User user : users){
+                user.setProfileBitmapImage();
+            }
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
 
     public void loadCategories() {
         this.categories = databaseHandler.getAllCategories();
 
         if(this.categories == null)
             this.categories = new ArrayList<>();
+    }
+
+
+    public boolean isTweetAlreadyLoaded(Tweet tweet){
+        for(Tweet t : homeTimeLineTweets){
+            if(tweet.getId() == t.getId()){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int unreadTweets(){
+        int unread = 0;
+        for(Tweet tweet : homeTimeLineTweets){
+            if(tweet.getRead() == false) {
+                unread++;
+            }
+        }
+        return unread;
     }
 }
