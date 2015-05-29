@@ -1,5 +1,6 @@
 package sdis.twitterclient.GUI;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.support.v7.widget.RecyclerView;
@@ -24,12 +25,13 @@ public class CategoryTimelineAdapter  extends RecyclerView.Adapter<CategoryTimel
 
     public ArrayList<Tweet> tweets;
     public User user;
+    public Activity activity;
 
-    CategoryTimelineAdapter(ArrayList<Tweet> tweets, User user){ // MyAdapter Constructor with titles and icons parameter
+    CategoryTimelineAdapter(Activity activity, ArrayList<Tweet> tweets, User user){ // MyAdapter Constructor with titles and icons parameter
         // titles, icons, name, email, profile pic are passed from the main activity as we
         this.tweets = tweets;
         this.user = user;
-
+        this.activity=activity;
     }
 
 
@@ -109,6 +111,7 @@ public class CategoryTimelineAdapter  extends RecyclerView.Adapter<CategoryTimel
             @Override
             public void onClick(View v) {
                 user.postReTweet(Long.toString(tweet.getId()));
+                ((SpecificCategoryActivity)activity).showToast("Retweet completed", 2000);
             }
         });
 
@@ -138,6 +141,7 @@ public class CategoryTimelineAdapter  extends RecyclerView.Adapter<CategoryTimel
                                 // if this button is clicked, close
                                 // current activity
                                 user.postReplyTweet(tweetText.getText().toString(), tweet.getId());
+                                ((SpecificCategoryActivity)activity).showToast("Tweet replied", 2000);
                             }
                         })
                         .setNegativeButton("Cancel",new DialogInterface.OnClickListener() {

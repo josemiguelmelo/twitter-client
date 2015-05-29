@@ -19,6 +19,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -63,6 +64,11 @@ public class CreateCategoryActivity extends ActionBarActivity {
 
     EditText categoryNameInput;
 
+    public void showToast(String text, int duration){
+        Toast toast = Toast.makeText(this, text, duration);
+        toast.show();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,11 +95,12 @@ public class CreateCategoryActivity extends ActionBarActivity {
                 }
                 if(categoryUser.size() == 0)
                     return;
-                
+
                 DatabaseHandler db = new DatabaseHandler(getApplication());
                 Category c = new Category(categoryNameInput.getText().toString());
                 c.setUsers(categoryUser);
                 db.addCategory(c);
+                showToast("Category created", 2000);
                 finish();
             }
         });

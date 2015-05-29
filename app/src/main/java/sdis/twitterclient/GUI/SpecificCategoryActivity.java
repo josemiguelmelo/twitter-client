@@ -105,6 +105,12 @@ public class SpecificCategoryActivity extends ActionBarActivity {
 
     }
 
+
+    public void showToast(String text, int duration){
+        Toast toast = Toast.makeText(this, text, duration);
+        toast.show();
+    }
+
     private void createTweetAlertDialog(){
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                 this);
@@ -189,7 +195,7 @@ public class SpecificCategoryActivity extends ActionBarActivity {
 
         timelineView.setHasFixedSize(true);                            // Letting the system know that the list objects are of fixed size
 
-        this.timelineAdapter = new CategoryTimelineAdapter(this.categoryTweets, user);       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
+        this.timelineAdapter = new CategoryTimelineAdapter(this, this.categoryTweets, user);       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
         // And passing the titles,icons,header view name, header view email,
         // and header view profile picture
 

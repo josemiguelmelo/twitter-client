@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import sdis.twitterclient.Models.User;
 import sdis.twitterclient.R;
@@ -93,6 +94,7 @@ public class ClientActivity extends ActionBarActivity {
 
     void onItemsLoadComplete() {
         user.loadTimeline(timelineView, timelineAdapter, refreshLayout, this);
+
     }
 
     private void setRefreshLayoutListener(){
@@ -104,6 +106,11 @@ public class ClientActivity extends ActionBarActivity {
             }
         });
 
+    }
+
+    public void showToast(String text, int duration){
+        Toast toast = Toast.makeText(this, text, duration);
+        toast.show();
     }
 
     private void createTweetAlertDialog(){
@@ -129,6 +136,7 @@ public class ClientActivity extends ActionBarActivity {
                         // if this button is clicked, close
                         // current activity
                         user.postTweet(tweetText.getText().toString());
+                        showToast("Tweet posted", 1000);
                     }
                 })
                 .setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
@@ -188,7 +196,7 @@ public class ClientActivity extends ActionBarActivity {
 
         timelineView.setHasFixedSize(true);                            // Letting the system know that the list objects are of fixed size
 
-        this.timelineAdapter = new TimelineAdapter(user.getHomeTimeLineTweets(), user);       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
+        this.timelineAdapter = new TimelineAdapter(this, user.getHomeTimeLineTweets(), user);       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
         // And passing the titles,icons,header view name, header view email,
         // and header view profile picture
 
