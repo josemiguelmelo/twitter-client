@@ -83,7 +83,7 @@ public class LoginActivity extends ActionBarActivity {
             startActivity(intent);
         }
 
-        Button testButton = (Button) findViewById(R.id.testButton);
+        Button testButton = (Button) findViewById(R.id.loginButton);
         testButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -113,13 +113,6 @@ public class LoginActivity extends ActionBarActivity {
                     }
                 };
                 th.start();
-            }
-        });
-
-        Button signInButton = (Button) findViewById(R.id.signInButton);
-        signInButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                loginToTwitter();
             }
         });
 
