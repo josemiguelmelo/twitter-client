@@ -72,7 +72,7 @@ public class LoginActivity extends ActionBarActivity {
         mSharedPreferences = this.getSharedPreferences(
                 "sdis.twitterclient", Context.MODE_PRIVATE);
 
-        if(false && mSharedPreferences.getBoolean(PREF_KEY_TWITTER_LOGIN, false))
+        if(mSharedPreferences.getBoolean(PREF_KEY_TWITTER_LOGIN, false))
         {
             accessTokenString = mSharedPreferences.getString(PREF_KEY_OAUTH_TOKEN, "");
             accessTokenSecretString = mSharedPreferences.getString(PREF_KEY_OAUTH_SECRET, "");
